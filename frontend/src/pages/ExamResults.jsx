@@ -96,16 +96,35 @@ const ExamResults = () => {
     // 3. Summary Stats Grid
     doc.setFillColor(248, 250, 252); // slate-50
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(14, 49, pageWidth - 28, 16, 3, 3, 'FD');
+    doc.roundedRect(14, 48, pageWidth - 28, 14, 3, 3, 'FD');
 
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(51, 65, 85);
-    doc.text(`Total Candidates: ${stats.totalAttempts}`, 20, 59);
-    doc.text(`Average Score: ${stats.averageScore}`, (pageWidth / 2) - 15, 59);
-    doc.text(`Highest Score: ${stats.highestScore}`, pageWidth - 55, 59);
+    doc.text(`Total Candidates: ${stats.totalAttempts}`, 18, 57);
+    doc.text(`Average Score: ${stats.averageScore}`, (pageWidth / 2) - 15, 57);
+    doc.text(`Highest Score: ${stats.highestScore}`, pageWidth - 55, 57);
 
-    // 4. AutoTable Data
+    // 4. ForestWaala Announcement Banner in PDF
+    doc.setFillColor(240, 249, 255); // sky-50
+    doc.setDrawColor(186, 230, 253); // sky-200
+    doc.roundedRect(14, 65, pageWidth - 28, 16, 3, 3, 'FD');
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(3, 105, 161); // sky-700
+    doc.text('EXAM POWERED BY FORESTWAALA', 18, 71);
+
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 65, 85);
+    doc.text('For more competitive mock exams, study materials & answer keys, join our Telegram & YouTube channels:', 18, 76);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(2, 132, 199);
+    doc.text('Telegram: https://t.me/Forestwaala   |   YouTube: https://www.youtube.com/@ForestWaala', 18, 80);
+
+    // 5. AutoTable Data
     const tableData = attempts.map((att) => [
       `#${att.rank}`,
       att.studentName,
@@ -123,7 +142,7 @@ const ExamResults = () => {
     ]);
 
     autoTable(doc, {
-      startY: 70,
+      startY: 85,
       head: [['Rank', 'Candidate Name', 'Score', 'Percentage', 'Submitted Date']],
       body: tableData,
       theme: 'grid',
@@ -158,7 +177,7 @@ const ExamResults = () => {
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
       doc.text(
-        'SarkariMitra — Powered by ForestWaala • https://t.me/Forestwaala',
+        'SarkariMitra — Powered by ForestWaala | Telegram: t.me/Forestwaala',
         14,
         doc.internal.pageSize.getHeight() - 10
       );

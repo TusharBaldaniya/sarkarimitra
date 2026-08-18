@@ -68,6 +68,7 @@ const getPublicExamInfo = async (req, res) => {
         durationMinutes: exam.durationMinutes,
         startAt: exam.startAt,
         endAt: exam.endAt,
+        showAnswersToStudent: exam.showAnswersToStudent,
       },
     });
   } catch (error) {
@@ -323,7 +324,8 @@ const submitPublicExam = async (req, res) => {
         unanswered: unansweredCount,
         submittedAt,
         status: finalStatus,
-        questions: questionResults,
+        showAnswersToStudent: exam.showAnswersToStudent,
+        questions: exam.showAnswersToStudent ? questionResults : null,
       },
     });
   } catch (error) {

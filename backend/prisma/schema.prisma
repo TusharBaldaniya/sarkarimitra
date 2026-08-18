@@ -44,6 +44,7 @@ model Exam {
   endAt           DateTime
   durationMinutes Int
   isActive        Boolean       @default(true)
+  showAnswersToStudent Boolean  @default(true)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   examQuestions   ExamQuestion[]

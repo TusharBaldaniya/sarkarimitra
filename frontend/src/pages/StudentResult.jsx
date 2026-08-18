@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles, Youtube, Send } from 'lucide-react';
+import { Trophy, CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles, Youtube, Send, FileText } from 'lucide-react';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
 const TELEGRAM_URL = 'https://t.me/Forestwaala';
@@ -33,6 +33,8 @@ const StudentResult = () => {
       </div>
     );
   }
+
+  const canShowAnswerDetails = result.showAnswersToStudent && Array.isArray(result.questions) && result.questions.length > 0;
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8 flex justify-center">
@@ -98,24 +100,31 @@ const StudentResult = () => {
           {/* ForestWaala Social Community Join Cards */}
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2.5 text-center">
             <p className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
-              Stay Prepared with ForestWaala Official Channels
+              {canShowAnswerDetails ? 'Stay Prepared with ForestWaala Official Channels' : '📢 PDF Leaderboard & Answer Key Announcement'}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+
+            {!canShowAnswerDetails && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed font-medium">
+                The detailed answer key & PDF leaderboard will be released on our official Telegram channel! Join below to download your result PDF.
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <a
                 href={TELEGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 py-3 px-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-xs font-extrabold shadow-md shadow-sky-500/20 transition-all"
               >
                 <Send className="w-4 h-4" />
-                <span>Join Telegram for Updates</span>
+                <span>Join Telegram for Results PDF</span>
               </a>
 
               <a
                 href={YOUTUBE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl text-xs font-extrabold shadow-md shadow-rose-600/20 transition-all"
               >
                 <Youtube className="w-4 h-4" />
                 <span>Subscribe on YouTube</span>
@@ -123,97 +132,99 @@ const StudentResult = () => {
             </div>
           </div>
 
-          {/* Toggle Answer Details */}
-          {result.questions && result.questions.length > 0 && (
-            <button
-              onClick={() => setShowAnswers(!showAnswers)}
-              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
-            >
-              {showAnswers ? (
-                <>
-                  <EyeOff className="w-4 h-4" />
-                  <span>Hide Question Answers</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4 text-brand-600" />
-                  <span>View Detailed Answers & Explanations</span>
-                </>
+          {/* Toggle Answer Details (Only if showAnswersToStudent is enabled) */}
+          {canShowAnswerDetails && (
+            <>
+              <button
+                onClick={() => setShowAnswers(!showAnswers)}
+                className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
+              >
+                {showAnswers ? (
+                  <>
+                    <EyeOff className="w-4 h-4" />
+                    <span>Hide Question Answers</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 text-brand-600" />
+                    <span>View Detailed Answers & Explanations</span>
+                  </>
+                )}
+              </button>
+
+              {/* Answer Key Details */}
+              {showAnswers && (
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">
+                    Question Review
+                  </h3>
+
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
+                    {result.questions.map((q, idx) => {
+                      const isUnans = !q.selectedAnswer;
+                      return (
+                        <div
+                          key={q.questionId}
+                          className={`p-4 rounded-2xl border text-xs space-y-2.5 ${
+                            q.isCorrect
+                              ? 'border-emerald-200 bg-emerald-50/20'
+                              : isUnans
+                              ? 'border-slate-200 bg-slate-50/50'
+                              : 'border-rose-200 bg-rose-50/20'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-bold text-slate-800 text-sm">
+                              Q{idx + 1}. {q.questionText}
+                            </span>
+
+                            {q.isCorrect ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex-shrink-0">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>Correct</span>
+                              </span>
+                            ) : isUnans ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex-shrink-0">
+                                <MinusCircle className="w-3 h-3" />
+                                <span>Unanswered</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold flex-shrink-0">
+                                <XCircle className="w-3 h-3" />
+                                <span>Incorrect</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                              <span className="text-slate-400 font-semibold">Your Answer: </span>
+                              <span
+                                className={`font-bold ${
+                                  q.isCorrect ? 'text-emerald-700' : isUnans ? 'text-slate-500' : 'text-rose-700'
+                                }`}
+                              >
+                                {q.selectedAnswer ? `Option ${q.selectedAnswer}` : 'None'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-semibold">Correct Answer: </span>
+                              <span className="font-bold text-emerald-700">Option {q.correctAnswer}</span>
+                            </div>
+                          </div>
+
+                          {q.explanation && (
+                            <div className="p-2.5 bg-slate-100 rounded-xl text-slate-700 text-[11px]">
+                              <strong>Explanation: </strong> {q.explanation}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
-            </button>
-          )}
-
-          {/* Answer Key Details */}
-          {showAnswers && (
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">
-                Question Review
-              </h3>
-
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
-                {result.questions.map((q, idx) => {
-                  const isUnans = !q.selectedAnswer;
-                  return (
-                    <div
-                      key={q.questionId}
-                      className={`p-4 rounded-2xl border text-xs space-y-2.5 ${
-                        q.isCorrect
-                          ? 'border-emerald-200 bg-emerald-50/20'
-                          : isUnans
-                          ? 'border-slate-200 bg-slate-50/50'
-                          : 'border-rose-200 bg-rose-50/20'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-bold text-slate-800 text-sm">
-                          Q{idx + 1}. {q.questionText}
-                        </span>
-
-                        {q.isCorrect ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex-shrink-0">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Correct</span>
-                          </span>
-                        ) : isUnans ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex-shrink-0">
-                            <MinusCircle className="w-3 h-3" />
-                            <span>Unanswered</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold flex-shrink-0">
-                            <XCircle className="w-3 h-3" />
-                            <span>Incorrect</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-[11px]">
-                        <div>
-                          <span className="text-slate-400 font-semibold">Your Answer: </span>
-                          <span
-                            className={`font-bold ${
-                              q.isCorrect ? 'text-emerald-700' : isUnans ? 'text-slate-500' : 'text-rose-700'
-                            }`}
-                          >
-                            {q.selectedAnswer ? `Option ${q.selectedAnswer}` : 'None'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 font-semibold">Correct Answer: </span>
-                          <span className="font-bold text-emerald-700">Option {q.correctAnswer}</span>
-                        </div>
-                      </div>
-
-                      {q.explanation && (
-                        <div className="p-2.5 bg-slate-100 rounded-xl text-slate-700 text-[11px]">
-                          <strong>Explanation: </strong> {q.explanation}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            </>
           )}
         </div>
       </div>

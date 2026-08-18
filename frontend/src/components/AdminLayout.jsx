@@ -7,7 +7,6 @@ import {
   LogOut,
   Youtube,
   Send,
-  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -33,7 +32,7 @@ const AdminLayout = ({ children }) => {
   const isActive = (path) => location.pathname === path || (path !== '/admin/dashboard' && location.pathname.startsWith(`${path}`));
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 pb-20 md:pb-0">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 pb-14 lg:pb-0">
       {/* Top Header Bar with ForestWaala Logo and Title */}
       <header className="h-16 bg-slate-900 text-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-md border-b border-slate-800">
         {/* ForestWaala Logo and Brand Title */}
@@ -79,7 +78,7 @@ const AdminLayout = ({ children }) => {
         </nav>
 
         {/* Social Channel Links & Admin Profile Info */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <a
             href={TELEGRAM_URL}
             target="_blank"
@@ -114,8 +113,8 @@ const AdminLayout = ({ children }) => {
         {children}
       </main>
 
-      {/* App-Style Bottom Navigation Bar (Mobile & Tablet) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-slate-800 shadow-2xl px-2 py-2 flex items-center justify-around">
+      {/* Sleek Compact Mobile & Tablet Bottom Navigation Bar */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 shadow-2xl px-2 py-1 flex items-center justify-around h-13">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -123,32 +122,32 @@ const AdminLayout = ({ children }) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center py-0.5 px-2 rounded-lg transition-all ${
                 active
-                  ? 'text-brand-400 font-bold scale-105'
+                  ? 'text-brand-400 font-bold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <div
-                className={`p-1.5 rounded-xl ${
+                className={`p-1 rounded-lg ${
                   active ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30' : ''
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
               </div>
-              <span className="text-[10px] font-semibold mt-0.5">{item.label}</span>
+              <span className="text-[9px] font-bold mt-0.5 tracking-tight">{item.label}</span>
             </Link>
           );
         })}
 
         <button
           onClick={handleLogout}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-400 hover:text-rose-400"
+          className="flex flex-col items-center justify-center py-0.5 px-2 rounded-lg text-slate-400 hover:text-rose-400 transition-colors"
         >
-          <div className="p-1.5 rounded-xl">
-            <LogOut className="w-5 h-5" />
+          <div className="p-1 rounded-lg">
+            <LogOut className="w-4 h-4" />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5">Logout</span>
+          <span className="text-[9px] font-bold mt-0.5 tracking-tight">Logout</span>
         </button>
       </nav>
     </div>

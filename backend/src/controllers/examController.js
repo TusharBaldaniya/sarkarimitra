@@ -57,6 +57,7 @@ const getExams = async (req, res) => {
         endAt: exam.endAt,
         durationMinutes: exam.durationMinutes,
         isActive: exam.isActive,
+        showAnswersToStudent: exam.showAnswersToStudent,
         status,
         questionCount: exam._count.examQuestions,
         attemptCount: exam._count.attempts,
@@ -149,6 +150,7 @@ const createExam = async (req, res) => {
       startAt,
       endAt,
       durationMinutes,
+      showAnswersToStudent,
       questionIds, // Array of question ID strings in desired order
     } = req.body;
 
@@ -194,6 +196,7 @@ const createExam = async (req, res) => {
         startAt: startDate,
         endAt: endDate,
         durationMinutes: parseInt(durationMinutes, 10),
+        showAnswersToStudent: showAnswersToStudent !== undefined ? Boolean(showAnswersToStudent) : true,
         isActive: true,
       },
     });
@@ -239,6 +242,7 @@ const updateExam = async (req, res) => {
       endAt,
       durationMinutes,
       isActive,
+      showAnswersToStudent,
       questionIds,
     } = req.body;
 
@@ -272,6 +276,7 @@ const updateExam = async (req, res) => {
         endAt: endDate,
         durationMinutes: durationMinutes !== undefined ? parseInt(durationMinutes, 10) : existing.durationMinutes,
         isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
+        showAnswersToStudent: showAnswersToStudent !== undefined ? Boolean(showAnswersToStudent) : existing.showAnswersToStudent,
       },
     });
 

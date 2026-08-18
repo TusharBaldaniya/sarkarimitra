@@ -4,18 +4,13 @@ import {
   ArrowLeft,
   Save,
   Search,
-  Filter,
   CheckSquare,
   Square,
-  HelpCircle,
   AlertCircle,
-  Calendar,
-  Clock,
-  FileText,
   Plus,
   Upload,
-  Check,
-  Sparkles,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import api from '../services/api';
 import QuestionFormModal from '../components/QuestionFormModal';
@@ -45,6 +40,7 @@ const ExamForm = () => {
   const [startAt, setStartAt] = useState('');
   const [endAt, setEndAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(30);
+  const [showAnswersToStudent, setShowAnswersToStudent] = useState(true);
 
   // Questions selection
   const [allQuestions, setAllQuestions] = useState([]);
@@ -90,6 +86,7 @@ const ExamForm = () => {
         setStartAt(formatDateForInput(exam.startAt));
         setEndAt(formatDateForInput(exam.endAt));
         setDurationMinutes(exam.durationMinutes || 30);
+        setShowAnswersToStudent(exam.showAnswersToStudent !== undefined ? Boolean(exam.showAnswersToStudent) : true);
 
         if (Array.isArray(exam.questions)) {
           setSelectedQuestionIds(exam.questions.map((q) => q.id));
@@ -174,6 +171,7 @@ const ExamForm = () => {
         startAt: new Date(startAt).toISOString(),
         endAt: new Date(endAt).toISOString(),
         durationMinutes: parseInt(durationMinutes, 10),
+        showAnswersToStudent,
         questionIds: selectedQuestionIds,
       };
 
@@ -309,6 +307,32 @@ const ExamForm = () => {
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
+              </div>
+
+              {/* Show Answers & Result Toggle */}
+              <div className="sm:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div className="space-y-0.5 pr-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      {showAnswersToStudent ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-slate-400" />}
+                      <span>Show Result & Answer Key to Student After Exam</span>
+                    </span>
+                    <span className="text-xs text-slate-500 block">
+                      {showAnswersToStudent
+                        ? 'Yes: Students can view their score & correct answer key immediately after submitting.'
+                        : 'No: Answer key is hidden from students. Results will be released via PDF leaderboard on Telegram!'}
+                    </span>
+                  </div>
+                  <div className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={showAnswersToStudent}
+                      onChange={(e) => setShowAnswersToStudent(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                  </div>
+                </label>
               </div>
             </div>
           </div>
