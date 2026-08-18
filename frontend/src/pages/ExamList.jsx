@@ -14,8 +14,10 @@ import {
   AlertTriangle,
   Search,
   Filter,
+  FileText,
 } from 'lucide-react';
 import api from '../services/api';
+import QuestionPDFExportModal from '../components/QuestionPDFExportModal';
 
 const ExamList = () => {
   const [exams, setExams] = useState([]);
@@ -26,6 +28,12 @@ const ExamList = () => {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [copiedToken, setCopiedToken] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+
+  // PDF Export Modal state
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [pdfExamTitle, setPdfExamTitle] = useState('');
+  const [pdfExamQuestions, setPdfExamQuestions] = useState([]);
+  const [fetchingExamQuestions, setFetchingExamQuestions] = useState(false);
 
   useEffect(() => {
     fetchExams(1);
@@ -64,6 +72,22 @@ const ExamList = () => {
     navigator.clipboard.writeText(url);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(''), 2500);
+  };
+
+  const handleExportExamQuestionsPDF = async (examItem) => {
+    setFetchingExamQuestions(true);
+    try {
+      const res = await api.get(`/exams/${examItem.id}`);
+      if (res.data.success) {
+        setPdfExamTitle(res.data.data.title);
+        setPdfExamQuestions(res.data.data.questions || []);
+        setIsPDFModalOpen(true);
+      }
+    } catch (err) {
+      alert('Failed to load exam questions for PDF export.');
+    } finally {
+      setFetchingExamQuestions(false);
+    }
   };
 
   const handleToggleStatus = async (id) => {
@@ -185,6 +209,16 @@ const ExamList = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                     <button
+                      onClick={() => handleExportExamQuestionsPDF(exam)}
+                      disabled={fetchingExamQuestions}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors border border-slate-200"
+                      title="Export Question Paper PDF for this exam"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-brand-600" />
+                      <span>Questions PDF</span>
+                    </button>
+
+                    <button
                       onClick={() => copyExamLink(exam.publicToken)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors"
                     >
@@ -196,7 +230,7 @@ const ExamList = () => {
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Copy Exam Link</span>
+                          <span>Copy Link</span>
                         </>
                       )}
                     </button>
@@ -337,6 +371,15 @@ const ExamList = () => {
           </div>
         </div>
       )}
+
+      {/* Questions PDF Export Modal */}
+      <QuestionPDFExportModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        title={pdfExamTitle || 'Exam Question Paper'}
+        subtitle={`Total Questions: ${pdfExamQuestions.length}`}
+        questions={pdfExamQuestions}
+      />
     </div>
   );
 };

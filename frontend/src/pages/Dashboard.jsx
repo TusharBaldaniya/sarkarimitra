@@ -6,7 +6,6 @@ import {
   PlayCircle,
   Users,
   Plus,
-  Upload,
   Copy,
   Check,
   ExternalLink,
@@ -72,32 +71,39 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-brand-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Header Banner with Subtle ForestWaala Background Watermark Logo */}
+      <div className="bg-gradient-to-r from-slate-950 via-brand-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
+        {/* Subtle Watermark Logo Background */}
+        <img
+          src="/forestwallah.jpg"
+          alt="ForestWaala Watermark Logo"
+          className="absolute -right-6 -bottom-10 sm:right-4 sm:-bottom-8 w-60 h-60 sm:w-72 sm:h-72 rounded-full opacity-15 pointer-events-none object-cover border-4 border-brand-500/20 shadow-2xl"
+        />
+        <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-xs font-semibold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>SarkariMitra Admin Platform</span>
+            <span>SarkariMitra — Powered by ForestWaala</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
             Government Exam Portal Overview
           </h2>
-          <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+          <p className="text-slate-200 text-xs sm:text-sm mt-2 leading-relaxed font-medium">
             Manage your question bank, configure mock competitive tests, share secure token-based exam links, and evaluate student test performances.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-5">
             <Link
               to="/admin/exams/create"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Create New Exam</span>
             </Link>
             <Link
               to="/admin/questions"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm rounded-xl border border-slate-700 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm rounded-xl border border-slate-700 transition-all backdrop-blur-xs"
             >
               <HelpCircle className="w-4 h-4" />
               <span>Manage Question Bank</span>

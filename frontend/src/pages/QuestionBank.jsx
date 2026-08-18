@@ -10,12 +10,13 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
-  X,
-  CheckCircle2,
+  FileText,
+  Download,
 } from 'lucide-react';
 import api from '../services/api';
 import QuestionFormModal from '../components/QuestionFormModal';
 import CSVImportModal from '../components/CSVImportModal';
+import QuestionPDFExportModal from '../components/QuestionPDFExportModal';
 
 const CATEGORIES = [
   'All',
@@ -48,6 +49,10 @@ const QuestionBank = () => {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isCSVOpen, setIsCSVOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+
+  // PDF Export Modal
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [exportQuestions, setExportQuestions] = useState([]);
 
   useEffect(() => {
     fetchQuestions(1);
@@ -82,6 +87,26 @@ const QuestionBank = () => {
     fetchQuestions(1);
   };
 
+  const handleOpenPDFExport = async () => {
+    try {
+      // Fetch all questions matching filter for PDF export (up to 1000)
+      const res = await api.get('/questions', {
+        params: {
+          limit: 1000,
+          search,
+          category: selectedCategory,
+          difficulty: selectedDifficulty,
+        },
+      });
+      if (res.data.success) {
+        setExportQuestions(res.data.data);
+        setIsPDFModalOpen(true);
+      }
+    } catch (err) {
+      alert('Failed to prepare question PDF export.');
+    }
+  };
+
   const handleEdit = (q) => {
     setEditingQuestion(q);
     setIsFormOpen(true);
@@ -114,7 +139,16 @@ const QuestionBank = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={handleOpenPDFExport}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
+            title="Generate PDF of Question Bank MCQs"
+          >
+            <Download className="w-4 h-4 text-brand-600" />
+            <span>Questions PDF</span>
+          </button>
+
           <button
             onClick={() => setIsCSVOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
@@ -122,6 +156,7 @@ const QuestionBank = () => {
             <Upload className="w-4 h-4 text-slate-600" />
             <span>CSV Import</span>
           </button>
+
           <button
             onClick={handleAdd}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all"
@@ -387,6 +422,15 @@ const QuestionBank = () => {
         isOpen={isCSVOpen}
         onClose={() => setIsCSVOpen(false)}
         onSuccess={() => fetchQuestions(1)}
+      />
+
+      {/* Questions PDF Export Modal */}
+      <QuestionPDFExportModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        title={selectedCategory !== 'All' ? `Question Bank - ${selectedCategory}` : 'SarkariMitra MCQ Question Bank'}
+        subtitle={`Total Questions: ${exportQuestions.length}`}
+        questions={exportQuestions}
       />
     </div>
   );
