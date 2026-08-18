@@ -5,9 +5,14 @@ import {
   HelpCircle,
   FileCheck,
   LogOut,
-  GraduationCap,
+  Youtube,
+  Send,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
+const TELEGRAM_URL = 'https://t.me/Forestwaala';
 
 const AdminLayout = ({ children }) => {
   const location = useLocation();
@@ -29,27 +34,30 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 pb-20 md:pb-0">
-      {/* Top Header Bar with Logo and Title */}
+      {/* Top Header Bar with ForestWaala Logo and Title */}
       <header className="h-16 bg-slate-900 text-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-md border-b border-slate-800">
-        {/* Logo and Brand Title */}
+        {/* ForestWaala Logo and Brand Title */}
         <Link to="/admin/dashboard" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
-            <GraduationCap className="w-6 h-6" />
-          </div>
+          <img
+            src="/forestwallah.jpg"
+            alt="ForestWaala Logo"
+            className="w-10 h-10 rounded-full border-2 border-brand-400 shadow-md object-cover flex-shrink-0"
+          />
           <div>
-            <div className="font-extrabold text-base sm:text-xl tracking-tight flex items-center gap-2">
+            <div className="font-extrabold text-base sm:text-lg tracking-tight flex items-center gap-2">
               <span className="text-white">સરકારી</span>
               <span className="text-brand-400">मित्र</span>
-              <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
-                Admin
+              <span className="hidden sm:inline-block text-[10px] font-extrabold tracking-wide px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                Powered by ForestWaala
               </span>
             </div>
+            <p className="text-[11px] text-amber-300 font-semibold sm:hidden">Powered by ForestWaala</p>
             <p className="text-[11px] text-slate-400 hidden sm:block">Government Competitive Exam Portal</p>
           </div>
         </Link>
 
         {/* Desktop Navigation Links inside Header */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60">
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
@@ -70,9 +78,31 @@ const AdminLayout = ({ children }) => {
           })}
         </nav>
 
-        {/* Admin Profile Info (Logout removed from header) */}
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col text-right">
+        {/* Social Channel Links & Admin Profile Info */}
+        <div className="flex items-center gap-2.5">
+          <a
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 bg-slate-800 hover:bg-sky-600/20 text-sky-400 hover:text-sky-300 rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5"
+            title="Join ForestWaala Telegram Channel"
+          >
+            <Send className="w-4 h-4" />
+            <span className="hidden md:inline">Telegram</span>
+          </a>
+
+          <a
+            href={YOUTUBE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 bg-slate-800 hover:bg-rose-600/20 text-rose-400 hover:text-rose-300 rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5"
+            title="Subscribe ForestWaala YouTube Channel"
+          >
+            <Youtube className="w-4 h-4" />
+            <span className="hidden md:inline">YouTube</span>
+          </a>
+
+          <div className="hidden sm:flex flex-col text-right pl-2 border-l border-slate-800">
             <span className="text-xs font-bold text-slate-200">{admin?.name || 'Administrator'}</span>
             <span className="text-[10px] text-slate-400">{admin?.email}</span>
           </div>
@@ -85,7 +115,7 @@ const AdminLayout = ({ children }) => {
       </main>
 
       {/* App-Style Bottom Navigation Bar (Mobile & Tablet) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-slate-800 shadow-2xl px-2 py-2 flex items-center justify-around">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-slate-800 shadow-2xl px-2 py-2 flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);

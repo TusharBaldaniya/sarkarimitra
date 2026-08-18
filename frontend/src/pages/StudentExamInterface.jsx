@@ -7,9 +7,7 @@ import {
   Grid,
   Send,
   X,
-  AlertTriangle,
   RotateCcw,
-  CheckCircle,
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -144,20 +142,28 @@ const StudentExamInterface = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between">
-      {/* Sticky Top Header */}
-      <header className="bg-slate-900 text-white px-4 py-3 sticky top-0 z-30 shadow-md flex items-center justify-between">
-        <div className="min-w-0 pr-2">
-          <h1 className="font-bold text-xs sm:text-sm truncate text-slate-100">
-            {sessionData.examTitle}
-          </h1>
-          <p className="text-[11px] text-slate-400">
-            Question <span className="text-white font-bold">{currentIndex + 1}</span> of {totalQuestions}
-          </p>
+      {/* Sticky Top Header with ForestWaala Logo */}
+      <header className="bg-slate-950 text-white px-4 py-2.5 sticky top-0 z-30 shadow-md flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+          <img
+            src="/forestwallah.jpg"
+            alt="ForestWaala Logo"
+            className="w-8 h-8 rounded-full border border-brand-400 object-cover flex-shrink-0"
+          />
+          <div className="min-w-0">
+            <div className="font-extrabold text-xs sm:text-sm truncate text-white flex items-center gap-1.5">
+              <span>સરકારી</span>
+              <span className="text-brand-400">मित्र</span>
+            </div>
+            <p className="text-[10px] text-slate-400 truncate">
+              Q <span className="text-white font-bold">{currentIndex + 1}</span> of {totalQuestions} • {sessionData.examTitle}
+            </p>
+          </div>
         </div>
 
         {/* Live Timer Display */}
         <div
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm flex-shrink-0 ${
             timeLeft !== null && timeLeft <= 300
               ? 'bg-rose-600 text-white animate-pulse'
               : 'bg-slate-800 text-emerald-400 border border-slate-700'

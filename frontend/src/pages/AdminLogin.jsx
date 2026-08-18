@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ArrowRight, Youtube, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
+const TELEGRAM_URL = 'https://t.me/Forestwaala';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -34,18 +37,33 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-10">
-        <div className="bg-slate-950 p-8 text-center border-b border-slate-800">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white mx-auto mb-3 shadow-lg shadow-brand-500/20">
-            <GraduationCap className="w-7 h-7" />
+      {/* Background Graphic */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-brand-600/20 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl"></div>
+      </div>
+
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10">
+        {/* Top Header */}
+        <div className="bg-slate-950 p-8 text-center border-b border-slate-800 space-y-3">
+          <img
+            src="/forestwallah.jpg"
+            alt="ForestWaala Logo"
+            className="w-16 h-16 rounded-full border-2 border-brand-400 shadow-xl object-cover mx-auto"
+          />
+          <div>
+            <h2 className="text-2xl font-black text-white tracking-tight flex items-center justify-center gap-2">
+              <span className="text-white">સરકારી</span>
+              <span className="text-brand-400">मित्र</span>
+            </h2>
+            <div className="inline-block mt-1 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold tracking-wide">
+              Powered by ForestWaala
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight flex items-center justify-center gap-1.5">
-            <span className="text-white">સરકારી</span>
-            <span className="text-brand-400">मित्र</span>
-          </h2>
-          <p className="text-slate-400 text-xs mt-1">Admin Portal Access</p>
+          <p className="text-slate-400 text-xs">Admin Portal Access</p>
         </div>
 
+        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
           {error && (
             <div className="flex items-center gap-2 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium">
@@ -91,7 +109,7 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-xl font-semibold text-sm shadow-md shadow-brand-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-2xl font-bold text-sm shadow-md shadow-brand-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {submitting ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -103,9 +121,27 @@ const AdminLogin = () => {
             )}
           </button>
 
-          <p className="text-center text-xs text-slate-400 pt-2">
-            Protected Admin Authentication System
-          </p>
+          {/* Social Channels Links */}
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-3">
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold transition-colors"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Telegram Channel</span>
+            </a>
+            <a
+              href={YOUTUBE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold transition-colors"
+            >
+              <Youtube className="w-3.5 h-3.5" />
+              <span>YouTube Channel</span>
+            </a>
+          </div>
         </form>
       </div>
     </div>

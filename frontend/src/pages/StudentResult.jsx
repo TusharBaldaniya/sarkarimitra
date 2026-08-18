@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Trophy, CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles, Youtube, Send } from 'lucide-react';
+
+const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
+const TELEGRAM_URL = 'https://t.me/Forestwaala';
 
 const StudentResult = () => {
   const { token } = useParams();
@@ -31,28 +34,35 @@ const StudentResult = () => {
     );
   }
 
-  const isHighScorer = result.percentage >= 70;
-
   return (
-    <div className="min-h-screen bg-slate-900 p-4 sm:p-6 lg:p-8 flex justify-center">
+    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8 flex justify-center">
       <div className="w-full max-w-2xl space-y-6 my-auto">
-        {/* Top Celebratory Header */}
-        <div className="bg-gradient-to-tr from-slate-950 via-brand-950 to-slate-950 rounded-3xl p-6 sm:p-8 text-center text-white border border-slate-800 shadow-2xl relative overflow-hidden">
+        {/* Top Celebratory Header with ForestWaala Logo */}
+        <div className="bg-gradient-to-tr from-slate-950 via-brand-950 to-slate-950 rounded-3xl p-6 sm:p-8 text-center text-white border border-slate-800 shadow-2xl relative overflow-hidden space-y-3">
           <div className="absolute top-0 right-0 translate-x-8 -translate-y-8 w-48 h-48 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
 
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 mx-auto mb-4 shadow-xl shadow-amber-500/30">
-            <Trophy className="w-9 h-9" />
+          <div className="relative inline-block">
+            <img
+              src="/forestwallah.jpg"
+              alt="ForestWaala Logo"
+              className="w-20 h-20 rounded-full border-4 border-slate-900 shadow-2xl object-cover mx-auto ring-2 ring-amber-400"
+            />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg">
+              🏆
+            </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Exam Completed Successfully</span>
-          </div>
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Powered by ForestWaala</span>
+            </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{result.examTitle}</h1>
-          <p className="text-slate-300 text-xs sm:text-sm mt-1">
-            Candidate: <strong className="text-white">{result.studentName}</strong>
-          </p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{result.examTitle}</h1>
+            <p className="text-slate-300 text-xs sm:text-sm">
+              Candidate: <strong className="text-white">{result.studentName}</strong>
+            </p>
+          </div>
         </div>
 
         {/* Result Score Card */}
@@ -82,6 +92,34 @@ const StudentResult = () => {
             <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
               <span className="text-slate-600 font-semibold block uppercase">Unanswered</span>
               <span className="text-xl sm:text-2xl font-black text-slate-800">{result.unanswered}</span>
+            </div>
+          </div>
+
+          {/* ForestWaala Social Community Join Cards */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2.5 text-center">
+            <p className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+              Stay Prepared with ForestWaala Official Channels
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all"
+              >
+                <Send className="w-4 h-4" />
+                <span>Join Telegram for Updates</span>
+              </a>
+
+              <a
+                href={YOUTUBE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all"
+              >
+                <Youtube className="w-4 h-4" />
+                <span>Subscribe on YouTube</span>
+              </a>
             </div>
           </div>
 
