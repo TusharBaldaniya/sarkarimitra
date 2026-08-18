@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Question {
+  id            String          @id @default(uuid())
+  questionText  String          @db.Text
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String          // "A", "B", "C", or "D"
+  category      String          @default("General Knowledge")
+  difficulty    String          @default("Medium") // "Easy", "Medium", "Hard"
+  explanation   String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  examQuestions ExamQuestion[]
+  answers       AttemptAnswer[]
+
+  @@map("questions")
+}
+
+model Exam {
+  id              String        @id @default(uuid())
+  title           String
+  description     String?       @db.Text
+  publicToken     String        @unique
+  startAt         DateTime
+  endAt           DateTime
+  durationMinutes Int
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  examQuestions   ExamQuestion[]
+  attempts        ExamAttempt[]
+
+  @@map("exams")
+}
+
+model ExamQuestion {
+  id            String   @id @default(uuid())
+  examId        String
+  questionId    String
+  questionOrder Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  exam     Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, questionId])
+  @@map("exam_questions")
+}
+
+model ExamAttempt {
+  id             String          @id @default(uuid())
+  examId         String
+  studentName    String
+  startedAt      DateTime        @default(now())
+  submittedAt    DateTime?
+  score          Float           @default(0)
+  totalQuestions Int             @default(0)
+  percentage     Float           @default(0)
+  status         String          @default("IN_PROGRESS") // "IN_PROGRESS", "SUBMITTED", "AUTO_SUBMITTED"
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  exam    Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers AttemptAnswer[]
+
+  @@map("exam_attempts")
+}
+
+model AttemptAnswer {
+  id             String   @id @default(uuid())
+  attemptId      String
+  questionId     String
+  selectedAnswer String?  // "A", "B", "C", "D", or null
+  isCorrect      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  attempt  ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("attempt_answers")
+}
