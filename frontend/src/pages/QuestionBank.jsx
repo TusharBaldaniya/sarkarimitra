@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
-  FileText,
   Download,
 } from 'lucide-react';
 import api from '../services/api';
@@ -89,7 +88,6 @@ const QuestionBank = () => {
 
   const handleOpenPDFExport = async () => {
     try {
-      // Fetch all questions matching filter for PDF export (up to 1000)
       const res = await api.get('/questions', {
         params: {
           limit: 1000,
@@ -139,36 +137,36 @@ const QuestionBank = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
           <button
             onClick={handleOpenPDFExport}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
             title="Generate PDF of Question Bank MCQs"
           >
-            <Download className="w-4 h-4 text-brand-600" />
-            <span>Questions PDF</span>
+            <Download className="w-4 h-4 text-brand-600 flex-shrink-0" />
+            <span>PDF Export</span>
           </button>
 
           <button
             onClick={() => setIsCSVOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition-all"
           >
-            <Upload className="w-4 h-4 text-slate-600" />
+            <Upload className="w-4 h-4 text-slate-600 flex-shrink-0" />
             <span>CSV Import</span>
           </button>
 
           <button
             onClick={handleAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all"
+            className="col-span-2 sm:col-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 flex-shrink-0" />
             <span>Add Question</span>
           </button>
         </div>
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
+      {/* Mobile-Optimized Responsive Search & Filter Toolbar */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
         <form onSubmit={handleSearchSubmit} className="flex-1 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -180,13 +178,13 @@ const QuestionBank = () => {
           />
         </form>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:w-auto w-full">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+            <Filter className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full py-1 bg-transparent text-xs sm:text-sm focus:outline-none font-medium text-slate-700 truncate"
             >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -196,17 +194,19 @@ const QuestionBank = () => {
             </select>
           </div>
 
-          <select
-            value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            {DIFFICULTIES.map((dif) => (
-              <option key={dif} value={dif}>
-                Difficulty: {dif}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              className="w-full py-1 bg-transparent text-xs sm:text-sm focus:outline-none font-medium text-slate-700 truncate"
+            >
+              {DIFFICULTIES.map((dif) => (
+                <option key={dif} value={dif}>
+                  Difficulty: {dif}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
