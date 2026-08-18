@@ -6,10 +6,14 @@ import {
   Trophy,
   BarChart3,
   Search,
-  ExternalLink,
   ChevronRight,
   UserCheck,
+  Download,
+  Share2,
+  FileText,
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import api from '../services/api';
 
 const ExamResults = () => {
@@ -20,6 +24,7 @@ const ExamResults = () => {
   const [attempts, setAttempts] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   useEffect(() => {
     fetchResults();
@@ -44,21 +49,210 @@ const ExamResults = () => {
     }
   };
 
+  // Generate & Download PDF Function
+  const generatePDFBlob = () => {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // 1. Header Box
+    doc.setFillColor(15, 23, 42); // slate-900
+    doc.rect(0, 0, pageWidth, 28, 'F');
+
+    // Title: સરકારી मित्र — Powered by ForestWaala
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SarkariMitra - Powered by ForestWaala', 14, 12);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(251, 191, 36); // amber-400
+    doc.text('Official Exam Result Leaderboard', 14, 20);
+
+    // 2. Exam Title & Metadata Box
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    const examTitleText = exam ? exam.title : 'Exam Results';
+    doc.text(examTitleText, 14, 38);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    const dateStr = new Date().toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    doc.text(`Generated Date: ${dateStr}`, 14, 44);
+
+    // 3. Summary Stats Grid
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, 49, pageWidth - 28, 16, 3, 3, 'FD');
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 65, 85);
+    doc.text(`Total Candidates: ${stats.totalAttempts}`, 20, 59);
+    doc.text(`Average Score: ${stats.averageScore}`, (pageWidth / 2) - 15, 59);
+    doc.text(`Highest Score: ${stats.highestScore}`, pageWidth - 55, 59);
+
+    // 4. AutoTable Data
+    const tableData = attempts.map((att) => [
+      `#${att.rank}`,
+      att.studentName,
+      `${att.score} / ${att.totalQuestions}`,
+      `${att.percentage}%`,
+      att.submittedAt
+        ? new Date(att.submittedAt).toLocaleString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : 'In Progress',
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [['Rank', 'Candidate Name', 'Score', 'Percentage', 'Submitted Date']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [30, 41, 59], // slate-800
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9,
+        halign: 'left',
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 16, fontStyle: 'bold' },
+        1: { cellWidth: 'auto', fontStyle: 'bold' },
+        2: { halign: 'center', cellWidth: 28, fontStyle: 'bold' },
+        3: { halign: 'center', cellWidth: 28, fontStyle: 'bold' },
+        4: { cellWidth: 45 },
+      },
+      styles: {
+        fontSize: 8.5,
+        cellPadding: 3,
+        textColor: [30, 41, 59],
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        'SarkariMitra — Powered by ForestWaala • https://t.me/Forestwaala',
+        14,
+        doc.internal.pageSize.getHeight() - 10
+      );
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth - 25,
+        doc.internal.pageSize.getHeight() - 10
+      );
+    }
+
+    return doc;
+  };
+
+  const handleDownloadPDF = () => {
+    setGeneratingPDF(true);
+    try {
+      const doc = generatePDFBlob();
+      const filename = `${exam ? exam.title.replace(/[^a-zA-Z0-9]/g, '_') : 'Exam'}_Leaderboard.pdf`;
+      doc.save(filename);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const handleSharePDF = async () => {
+    setGeneratingPDF(true);
+    try {
+      const doc = generatePDFBlob();
+      const pdfBlob = doc.output('blob');
+      const filename = `${exam ? exam.title.replace(/[^a-zA-Z0-9]/g, '_') : 'Exam'}_Leaderboard.pdf`;
+      const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: exam ? exam.title : 'Exam Results',
+          text: `Exam Leaderboard Results for ${exam ? exam.title : 'Exam'} - Powered by ForestWaala`,
+        });
+      } else {
+        // Fallback to download if Web Share API files not supported on current browser
+        doc.save(filename);
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share error:', err);
+        handleDownloadPDF();
+      }
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Top Navigation Bar */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/admin/exams"
-          className="p-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            {exam ? exam.title : 'Exam Results'}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500">Student evaluation leaderboard & performance</p>
+      {/* Top Navigation & Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/exams"
+            className="p-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              {exam ? exam.title : 'Exam Results'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">Student evaluation leaderboard & performance</p>
+          </div>
+        </div>
+
+        {/* Export PDF & Share Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDownloadPDF}
+            disabled={generatingPDF || attempts.length === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" />
+            <span>{generatingPDF ? 'Generating...' : 'Download Results PDF'}</span>
+          </button>
+
+          <button
+            onClick={handleSharePDF}
+            disabled={generatingPDF || attempts.length === 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs sm:text-sm rounded-xl transition-all disabled:opacity-50"
+            title="Share Result PDF"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </button>
         </div>
       </div>
 
