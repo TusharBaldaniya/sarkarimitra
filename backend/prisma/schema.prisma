@@ -83,6 +83,8 @@ model ExamAttempt {
   exam    Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
   answers AttemptAnswer[]
 
+  @@index([examId, score, submittedAt])
+  @@index([examId])
   @@map("exam_attempts")
 }
 
@@ -98,5 +100,7 @@ model AttemptAnswer {
   question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
   @@map("attempt_answers")
 }
