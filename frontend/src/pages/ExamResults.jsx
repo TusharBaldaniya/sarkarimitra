@@ -134,13 +134,13 @@ const ExamResults = () => {
     container.innerHTML = `
       <div style="width: 800px; min-height: 1120px; padding: 28px; background: #ffffff; color: #0f172a; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; position: relative; display: flex; flex-direction: column; justify-content: space-between;">
         
-        <!-- WATERMARK LAYER ON ALL PAGES -->
-        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.12; pointer-events: none; z-index: 0; text-align: center;">
-          <img src="/forestwallah.jpg" style="width: 320px; height: 320px; border-radius: 50%; object-fit: cover; margin: 0 auto; filter: grayscale(10%);" />
-          <div style="font-size: 38px; font-weight: 900; letter-spacing: 4px; color: #0f172a; margin-top: 14px; text-transform: uppercase;">
+        <!-- WATERMARK LAYER ON ALL PAGES (PERFECT ABSOLUTE CENTER & TRANSLUCENT) -->
+        <div style="position: absolute; top: 520px; left: 400px; transform: translate(-50%, -50%); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.22; pointer-events: none; z-index: 0; text-align: center;">
+          <img src="/forestwallah.jpg" style="width: 360px; height: 360px; border-radius: 50%; object-fit: cover; margin: 0 auto; filter: grayscale(5%);" />
+          <div style="font-size: 42px; font-weight: 900; letter-spacing: 5px; color: #0f172a; margin-top: 16px; text-transform: uppercase;">
             FORESTWAALA
           </div>
-          <div style="font-size: 13px; font-weight: 800; color: #334155; margin-top: 4px; letter-spacing: 1px;">
+          <div style="font-size: 14px; font-weight: 800; color: #334155; margin-top: 4px; letter-spacing: 1px;">
             COMPETITIVE EXAM PORTAL
           </div>
         </div>
@@ -148,172 +148,119 @@ const ExamResults = () => {
         <div style="position: relative; z-index: 10; flex: 1;">
           <!-- Header Banner with ForestWaala Circular Logo & Title -->
           <div style="background: #0f172a; color: #ffffff; padding: 20px 24px; border-radius: 16px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <img src="/forestwallah.jpg" style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fbbf24; object-fit: cover;" />
-            <div>
-              <div style="font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">
-                <span style="color: #ffffff;">સરકારી</span> <span style="color: #60a5fa;">मित्र</span>
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <img src="/forestwallah.jpg" style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fbbf24; object-fit: cover;" />
+              <div>
+                <div style="font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">
+                  <span style="color: #ffffff;">સરકારી</span> <span style="color: #60a5fa;">मित्र</span>
+                </div>
+                <div style="font-size: 11px; font-weight: 800; color: #fcd34d; margin-top: 2px;">
+                  Powered by ForestWaala
+                </div>
               </div>
-              <div style="font-size: 11px; font-weight: 800; color: #fcd34d; margin-top: 2px;">
-                Powered by ForestWaala
+            </div>
+            <div style="text-align: right;">
+              <h1 style="font-size: 18px; font-weight: 900; color: #ffffff; margin: 0;">${exam ? exam.title : 'Exam'} - Results</h1>
+              <p style="font-size: 11px; color: #94a3b8; margin: 4px 0 0 0;">
+                Generated: ${new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
+              <div style="font-size: 10px; color: #fcd34d; font-weight: 700; margin-top: 4px;">
+                Page ${pageNum} of ${totalPages}
               </div>
             </div>
           </div>
-          <div style="text-align: right;">
-            <span style="background: rgba(251, 191, 36, 0.2); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.3); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
-              Result Leaderboard
-            </span>
-            <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">
-              Page ${pageNum} of ${totalPages}
-            </div>
-          </div>
-        </div>
 
-        ${
-          isFirstPage
-            ? `
-          <!-- Exam Title & Stats Banner on Page 1 -->
-          <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-top: 18px;">
-            <h1 style="font-size: 18px; font-weight: 900; color: #0f172a; margin: 0;">${exam ? exam.title : 'Exam Results'}</h1>
-            <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">
-              Generated: ${new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-            </p>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 12px; border-radius: 14px; border: 1px solid #e2e8f0; text-align: center; margin-top: 14px;">
-            <div>
-              <span style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block;">Total Candidates</span>
-              <span style="font-size: 18px; font-weight: 900; color: #0f172a;">${stats.totalAttempts}</span>
-            </div>
-            <div>
-              <span style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block;">Average Score</span>
-              <span style="font-size: 18px; font-weight: 900; color: #1d4ed8;">${stats.averageScore}</span>
-            </div>
-            <div>
-              <span style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block;">Highest Score</span>
-              <span style="font-size: 18px; font-weight: 900; color: #047857;">${stats.highestScore}</span>
-            </div>
-          </div>
-
-          <!-- Top 3 Rankers Honor Banner Cards -->
           ${
-            attempts.length > 0
+            isFirstPage
               ? `
-            <div style="margin-top: 14px;">
-              <div style="font-size: 11px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                🏆 TOP RANKERS HONOR ROLL
+            <!-- Summary Stats Grid (Translucent so Watermark is Visible) -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: rgba(248, 250, 252, 0.75); padding: 12px; border-radius: 14px; border: 1px solid #cbd5e1; text-align: center; margin-top: 14px;">
+              <div>
+                <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Total Candidates</span>
+                <span style="font-size: 18px; font-weight: 900; color: #0f172a;">${stats.totalAttempts}</span>
               </div>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                ${
-                  attempts[0]
-                    ? `
-                  <div style="background: #fef3c7; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 10px; text-align: center;">
-                    <div style="font-size: 16px;">🥇 <strong style="color: #b45309; font-size: 11px; text-transform: uppercase;">RANK #1</strong></div>
-                    <div style="font-size: 12px; font-weight: 900; color: #78350f; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[0].studentName)}</div>
-                    <div style="font-size: 11px; font-weight: 800; color: #d97706; margin-top: 2px;">${attempts[0].score} / ${attempts[0].totalQuestions} (${attempts[0].percentage}%)</div>
-                  </div>
-                `
-                    : ''
-                }
-                ${
-                  attempts[1]
-                    ? `
-                  <div style="background: #f1f5f9; border: 1.5px solid #94a3b8; border-radius: 12px; padding: 10px; text-align: center;">
-                    <div style="font-size: 16px;">🥈 <strong style="color: #475569; font-size: 11px; text-transform: uppercase;">RANK #2</strong></div>
-                    <div style="font-size: 12px; font-weight: 900; color: #1e293b; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[1].studentName)}</div>
-                    <div style="font-size: 11px; font-weight: 800; color: #475569; margin-top: 2px;">${attempts[1].score} / ${attempts[1].totalQuestions} (${attempts[1].percentage}%)</div>
-                  </div>
-                `
-                    : ''
-                }
-                ${
-                  attempts[2]
-                    ? `
-                  <div style="background: #ffedd5; border: 1.5px solid #ea580c; border-radius: 12px; padding: 10px; text-align: center;">
-                    <div style="font-size: 16px;">🥉 <strong style="color: #c2410c; font-size: 11px; text-transform: uppercase;">RANK #3</strong></div>
-                    <div style="font-size: 12px; font-weight: 900; color: #7c2d12; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[2].studentName)}</div>
-                    <div style="font-size: 11px; font-weight: 800; color: #ea580c; margin-top: 2px;">${attempts[2].score} / ${attempts[2].totalQuestions} (${attempts[2].percentage}%)</div>
-                  </div>
-                `
-                    : ''
-                }
+              <div>
+                <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Average Score</span>
+                <span style="font-size: 18px; font-weight: 900; color: #1d4ed8;">${stats.averageScore}</span>
+              </div>
+              <div>
+                <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block;">Highest Score</span>
+                <span style="font-size: 18px; font-weight: 900; color: #047857;">${stats.highestScore}</span>
+              </div>
+            </div>
+
+            <!-- Community Banner (Translucent) -->
+            <div style="background: rgba(240, 249, 255, 0.75); border: 1px solid #bae6fd; border-radius: 14px; padding: 10px 14px; margin-top: 14px; text-align: center;">
+              <div style="font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase;">
+                📢 EXAM POWERED BY FORESTWAALA
+              </div>
+              <div style="font-size: 11px; color: #334155; margin-top: 4px;">
+                For study materials & official notifications, join:
+                <strong style="color: #0284c7;">Telegram: https://t.me/Forestwaala</strong> |
+                <strong style="color: #e11d48;">YouTube: https://www.youtube.com/@ForestWaala</strong>
               </div>
             </div>
           `
               : ''
           }
 
-          <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 10px 14px; margin-top: 14px; text-align: center;">
-            <div style="font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase;">
-              📢 EXAM POWERED BY FORESTWAALA
-            </div>
-            <div style="font-size: 11px; color: #334155; margin-top: 4px;">
-              For study materials & official notifications, join:
-              <strong style="color: #0284c7;">Telegram: https://t.me/Forestwaala</strong> |
-              <strong style="color: #e11d48;">YouTube: https://www.youtube.com/@ForestWaala</strong>
-            </div>
-          </div>
-        `
-            : ''
-        }
-
-        <!-- Leaderboard Table Chunk -->
-        <div style="border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-top: 16px;">
-          <table style="width: 100%; text-align: left; font-size: 12px; border-collapse: collapse;">
-            <thead>
-              <tr style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 11px; text-transform: uppercase;">
-                <th style="padding: 10px; text-align: center; width: 60px;">Rank</th>
-                <th style="padding: 10px;">Candidate Name</th>
-                <th style="padding: 10px; text-align: center;">Score</th>
-                <th style="padding: 10px; text-align: center;">Percentage</th>
-                <th style="padding: 10px;">Submitted Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${chunkData
-                .map(
-                  (att, idx) => `
-                <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-top: 1px solid #f1f5f9;">
-                  <td style="padding: 9px; text-align: center; font-weight: 900; color: #0f172a;">
-                    ${att.rank === 1 ? '🥇 #1' : att.rank === 2 ? '🥈 #2' : att.rank === 3 ? '🥉 #3' : `#${att.rank}`}
-                  </td>
-                  <td style="padding: 9px; font-weight: 700; color: #0f172a;">${escapeHTML(att.studentName)}</td>
-                  <td style="padding: 9px; text-align: center; font-weight: 800; color: #1e293b;">
-                    ${att.score} / ${att.totalQuestions}
-                  </td>
-                  <td style="padding: 9px; text-align: center; font-weight: 800;">
-                    <span style="background: #f1f5f9; color: #0f172a; padding: 2px 8px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 11px;">
-                      ${att.percentage}%
-                    </span>
-                  </td>
-                  <td style="padding: 9px; font-size: 11px; color: #64748b;">
-                    ${
-                      att.submittedAt
-                        ? new Date(att.submittedAt).toLocaleString('en-IN', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : 'In Progress'
-                    }
-                  </td>
+          <!-- Leaderboard Table Chunk (Translucent Rows so Watermark Logo Shines Through) -->
+          <div style="border: 1.5px solid #cbd5e1; border-radius: 14px; overflow: hidden; margin-top: 16px; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(1px);">
+            <table style="width: 100%; text-align: left; font-size: 12px; border-collapse: collapse;">
+              <thead>
+                <tr style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 11px; text-transform: uppercase;">
+                  <th style="padding: 10px; text-align: center; width: 60px;">Rank</th>
+                  <th style="padding: 10px;">Candidate Name</th>
+                  <th style="padding: 10px; text-align: center;">Score</th>
+                  <th style="padding: 10px; text-align: center;">Percentage</th>
+                  <th style="padding: 10px;">Submitted Date</th>
                 </tr>
-              `
-                )
-                .join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${chunkData
+                  .map(
+                    (att, idx) => `
+                  <tr style="background: ${idx % 2 === 0 ? 'rgba(255, 255, 255, 0.65)' : 'rgba(248, 250, 252, 0.65)'}; border-top: 1px solid #e2e8f0;">
+                    <td style="padding: 9px; text-align: center; font-weight: 900; color: #0f172a;">
+                      ${att.rank === 1 ? '🥇 #1' : att.rank === 2 ? '🥈 #2' : att.rank === 3 ? '🥉 #3' : `#${att.rank}`}
+                    </td>
+                    <td style="padding: 9px; font-weight: 700; color: #0f172a;">${escapeHTML(att.studentName)}</td>
+                    <td style="padding: 9px; text-align: center; font-weight: 800; color: #1e293b;">
+                      ${att.score} / ${att.totalQuestions}
+                    </td>
+                    <td style="padding: 9px; text-align: center; font-weight: 800;">
+                      <span style="background: rgba(241, 245, 249, 0.9); color: #0f172a; padding: 2px 8px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 11px;">
+                        ${att.percentage}%
+                      </span>
+                    </td>
+                    <td style="padding: 9px; font-size: 11px; color: #475569;">
+                      ${
+                        att.submittedAt
+                          ? new Date(att.submittedAt).toLocaleString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : 'In Progress'
+                      }
+                    </td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Footer -->
-        <div style="position: relative; z-index: 10; margin-top: 20px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+        <div style="position: relative; z-index: 10; margin-top: 20px; padding-top: 12px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; font-size: 10px; color: #64748b; font-weight: 600;">
           <span>SarkariMitra — Powered by ForestWaala</span>
-          <span>Telegram: https://t.me/Forestwaala</span>
+          <span>Page ${pageNum} of ${totalPages} • Telegram: t.me/Forestwaala</span>
         </div>
       </div>
-    </div>
     `;
   };
 
