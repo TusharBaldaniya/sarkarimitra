@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles, Youtube, Send, FileText } from 'lucide-react';
+import { CheckCircle2, XCircle, MinusCircle, Eye, EyeOff, Award, Sparkles, Youtube, Send } from 'lucide-react';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
 const TELEGRAM_URL = 'https://t.me/Forestwaala';
@@ -35,6 +35,12 @@ const StudentResult = () => {
   }
 
   const canShowAnswerDetails = result.showAnswersToStudent && Array.isArray(result.questions) && result.questions.length > 0;
+
+  const getOptionText = (questionObj, optionLetter) => {
+    if (!questionObj || !optionLetter) return '';
+    const key = `option${optionLetter.toUpperCase()}`;
+    return questionObj[key] || '';
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8 flex justify-center">
@@ -152,20 +158,23 @@ const StudentResult = () => {
                 )}
               </button>
 
-              {/* Answer Key Details */}
+              {/* Detailed Answer Key & Options */}
               {showAnswers && (
                 <div className="space-y-4 pt-4 border-t border-slate-100">
                   <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">
-                    Question Review
+                    Question Review & Answer Key
                   </h3>
 
-                  <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
                     {result.questions.map((q, idx) => {
                       const isUnans = !q.selectedAnswer;
+                      const selectedVal = getOptionText(q, q.selectedAnswer);
+                      const correctVal = getOptionText(q, q.correctAnswer);
+
                       return (
                         <div
-                          key={q.questionId}
-                          className={`p-4 rounded-2xl border text-xs space-y-2.5 ${
+                          key={q.questionId || idx}
+                          className={`p-4 rounded-2xl border text-xs space-y-3 ${
                             q.isCorrect
                               ? 'border-emerald-200 bg-emerald-50/20'
                               : isUnans
@@ -174,48 +183,92 @@ const StudentResult = () => {
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <span className="font-bold text-slate-800 text-sm">
+                            <span className="font-extrabold text-slate-900 text-sm leading-snug">
                               Q{idx + 1}. {q.questionText}
                             </span>
 
                             {q.isCorrect ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex-shrink-0">
-                                <CheckCircle2 className="w-3 h-3" />
-                                <span>Correct</span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex-shrink-0">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Correct (+1)</span>
                               </span>
                             ) : isUnans ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex-shrink-0">
-                                <MinusCircle className="w-3 h-3" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex-shrink-0">
+                                <MinusCircle className="w-3.5 h-3.5" />
                                 <span>Unanswered</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold flex-shrink-0">
-                                <XCircle className="w-3 h-3" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold flex-shrink-0">
+                                <XCircle className="w-3.5 h-3.5" />
                                 <span>Incorrect</span>
                               </span>
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2 text-[11px]">
-                            <div>
-                              <span className="text-slate-400 font-semibold">Your Answer: </span>
+                          {/* Options Breakdown Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                            {['A', 'B', 'C', 'D'].map((opt) => {
+                              const optionKey = `option${opt}`;
+                              const optionTextVal = q[optionKey];
+                              const isStudentChoice = q.selectedAnswer === opt;
+                              const isCorrectChoice = q.correctAnswer === opt;
+
+                              let style = 'bg-white border-slate-200 text-slate-700';
+                              if (isCorrectChoice) {
+                                style = 'bg-emerald-100/80 border-emerald-400 text-emerald-950 font-bold ring-1 ring-emerald-400/40';
+                              } else if (isStudentChoice && !isCorrectChoice) {
+                                style = 'bg-rose-100/80 border-rose-400 text-rose-950 font-bold ring-1 ring-rose-400/40';
+                              }
+
+                              return (
+                                <div key={opt} className={`p-2.5 rounded-xl border ${style} flex items-start justify-between gap-2`}>
+                                  <div>
+                                    <strong className="mr-1">({opt})</strong> {optionTextVal}
+                                  </div>
+                                  <span className="text-[10px] uppercase font-extrabold flex-shrink-0 tracking-wider">
+                                    {isStudentChoice && isCorrectChoice && '✓ Your Choice'}
+                                    {isStudentChoice && !isCorrectChoice && '✗ Your Choice'}
+                                    {!isStudentChoice && isCorrectChoice && '✓ Correct Answer'}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Summary Answer Values Box */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11.5px] pt-1">
+                            <div
+                              className={`p-2.5 rounded-xl border ${
+                                q.isCorrect
+                                  ? 'bg-emerald-50 border-emerald-200'
+                                  : isUnans
+                                  ? 'bg-slate-50 border-slate-200'
+                                  : 'bg-rose-50 border-rose-200'
+                              }`}
+                            >
+                              <span className="text-slate-400 font-semibold block uppercase text-[10px]">Your Answer</span>
                               <span
-                                className={`font-bold ${
-                                  q.isCorrect ? 'text-emerald-700' : isUnans ? 'text-slate-500' : 'text-rose-700'
+                                className={`font-extrabold ${
+                                  q.isCorrect ? 'text-emerald-800' : isUnans ? 'text-slate-500' : 'text-rose-800'
                                 }`}
                               >
-                                {q.selectedAnswer ? `Option ${q.selectedAnswer}` : 'None'}
+                                {q.selectedAnswer
+                                  ? `Option ${q.selectedAnswer}: ${selectedVal}`
+                                  : 'None (Unanswered)'}
                               </span>
                             </div>
-                            <div>
-                              <span className="text-slate-400 font-semibold">Correct Answer: </span>
-                              <span className="font-bold text-emerald-700">Option {q.correctAnswer}</span>
+
+                            <div className="p-2.5 rounded-xl border bg-emerald-50 border-emerald-200">
+                              <span className="text-slate-400 font-semibold block uppercase text-[10px]">Correct Answer</span>
+                              <span className="font-extrabold text-emerald-900">
+                                Option {q.correctAnswer}: {correctVal}
+                              </span>
                             </div>
                           </div>
 
                           {q.explanation && (
-                            <div className="p-2.5 bg-slate-100 rounded-xl text-slate-700 text-[11px]">
-                              <strong>Explanation: </strong> {q.explanation}
+                            <div className="p-3 bg-slate-100 rounded-xl text-slate-700 text-[11px] border border-slate-200">
+                              <strong className="text-slate-900">Explanation: </strong> {q.explanation}
                             </div>
                           )}
                         </div>
