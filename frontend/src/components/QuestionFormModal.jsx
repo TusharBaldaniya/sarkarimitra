@@ -3,6 +3,7 @@ import { X, Save, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 
 const CATEGORIES = [
+  'Environment',
   'General Knowledge',
   'History',
   'Geography',
