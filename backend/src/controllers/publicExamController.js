@@ -84,7 +84,7 @@ const getPublicExamInfo = async (req, res) => {
 const startPublicExam = async (req, res) => {
   try {
     const { token } = req.params;
-    const { studentName } = req.body;
+    const { studentName, deviceId } = req.body;
 
     if (!studentName || typeof studentName !== 'string' || studentName.trim().length < 2) {
       return res.status(400).json({
@@ -129,24 +129,23 @@ const startPublicExam = async (req, res) => {
       });
     }
 
-    // Prevent duplicate exam attempts by candidate name
-    const existingAttempt = await prisma.examAttempt.findFirst({
-      where: {
-        examId: exam.id,
-        studentName: {
-          equals: trimmedName,
-          mode: 'insensitive',
+    // Check deviceId uniqueness per exam (Allows multiple different students with same name on different devices)
+    if (deviceId && typeof deviceId === 'string' && deviceId.trim().length > 0) {
+      const existingDeviceAttempt = await prisma.examAttempt.findFirst({
+        where: {
+          examId: exam.id,
+          deviceId: deviceId.trim(),
+          status: { in: ['SUBMITTED'] },
         },
-        status: { in: ['SUBMITTED', 'AUTO_SUBMITTED', 'IN_PROGRESS'] },
-      },
-    });
-
-    if (existingAttempt) {
-      return res.status(400).json({
-        success: false,
-        code: 'ALREADY_ATTEMPTED',
-        message: `Candidate "${trimmedName}" has already submitted an attempt for this exam. Multiple attempts are not permitted.`,
       });
+
+      if (existingDeviceAttempt) {
+        return res.status(400).json({
+          success: false,
+          code: 'ALREADY_ATTEMPTED',
+          message: 'An attempt has already been submitted for this exam from this device. Multiple attempts per device are not permitted.',
+        });
+      }
     }
 
     // Create ExamAttempt record
@@ -155,6 +154,7 @@ const startPublicExam = async (req, res) => {
       data: {
         examId: exam.id,
         studentName: trimmedName,
+        deviceId: deviceId ? deviceId.trim() : null,
         startedAt,
         totalQuestions: exam.examQuestions.length,
         status: 'IN_PROGRESS',
@@ -246,7 +246,6 @@ const submitPublicExam = async (req, res) => {
     });
 
     // Normalize student answers input
-    // Can be an object `{ questionId: "A" }` or array of `{ questionId, selectedAnswer }`
     const answerMap = new Map();
     if (Array.isArray(answers)) {
       answers.forEach((ans) => {

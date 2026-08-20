@@ -85,17 +85,17 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
     return pdf;
   };
 
-  // Render HTML for a single A4 page with ForestWaala Watermark & intact questions
+  // Render HTML for a single A4 page with ForestWaala Watermark & translucent questions
   const renderPageChunkToDOM = (container, pageQuestions, pageNum, totalPages) => {
     const isFirstPage = pageNum === 1;
 
     container.innerHTML = `
       <div style="width: 800px; min-height: 1120px; padding: 28px; background: #ffffff; color: #0f172a; font-family: 'Inter', system-ui, -apple-system, sans-serif; box-sizing: border-box; position: relative; display: flex; flex-direction: column; justify-content: space-between;">
         
-        {/* ================= WATERMARK LAYER ON ALL PAGES ================= */}
-        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; items-center; justify-content: center; opacity: 0.07; pointer-events: none; z-index: 0; text-align: center; margin-top: 100px;">
-          <img src="/forestwallah.jpg" style="width: 280px; height: 280px; border-radius: 50%; object-fit: cover; margin: 0 auto; filter: grayscale(20%);" />
-          <div style="font-size: 38px; font-weight: 900; letter-spacing: 4px; color: #0f172a; margin-top: 14px; text-transform: uppercase;">
+        <!-- WATERMARK LAYER ON ALL PAGES (ABSOLUTE PERFECT CENTER) -->
+        <div style="position: absolute; top: 520px; left: 400px; transform: translate(-50%, -50%); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.22; pointer-events: none; z-index: 0; text-align: center;">
+          <img src="/forestwallah.jpg" style="width: 360px; height: 360px; border-radius: 50%; object-fit: cover; margin: 0 auto; filter: grayscale(5%);" />
+          <div style="font-size: 42px; font-weight: 900; letter-spacing: 5px; color: #0f172a; margin-top: 16px; text-transform: uppercase;">
             FORESTWAALA
           </div>
           <div style="font-size: 14px; font-weight: 800; color: #334155; margin-top: 4px; letter-spacing: 1px;">
@@ -103,13 +103,13 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
           </div>
         </div>
 
-        {/* Content Container (Layered above Watermark) */}
+        <!-- Content Container (Layered above Watermark) -->
         <div style="position: relative; z-index: 10; flex: 1;">
           
           ${
             isFirstPage
               ? `
-            {/* Header Banner on Page 1 */}
+            <!-- Header Banner on Page 1 -->
             <div style="background: #0f172a; color: #ffffff; padding: 18px 22px; border-radius: 16px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 14px;">
                 <img src="/forestwallah.jpg" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fbbf24; object-fit: cover;" />
@@ -139,7 +139,7 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
             </div>
 
             <!-- ForestWaala Community Announcement Card -->
-            <div style="background: rgba(240, 249, 255, 0.95); border: 1px solid #bae6fd; border-radius: 14px; padding: 10px 14px; margin-top: 12px;">
+            <div style="background: rgba(240, 249, 255, 0.75); border: 1px solid #bae6fd; border-radius: 14px; padding: 10px 14px; margin-top: 12px;">
               <div style="font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase;">
                 📢 FORESTWAALA OFFICIAL COMPETITIVE EXAM PORTAL
               </div>
@@ -153,7 +153,7 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
             </div>
           `
               : `
-            {/* Header Banner on Page 2+ */}
+            <!-- Header Banner on Page 2+ -->
             <div style="background: #0f172a; color: #ffffff; padding: 12px 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="/forestwallah.jpg" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #fbbf24; object-fit: cover;" />
@@ -164,33 +164,33 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
           `
           }
 
-          {/* MCQ Question List (Intact Blocks) */}
+          <!-- MCQ Question List (Translucent Cards so Watermark Logo is 100% Visible) -->
           <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
             ${pageQuestions
               .map(
                 (item) => `
-              <div style="padding: 14px; border-radius: 14px; border: 1px solid #cbd5e1; background: rgba(255, 255, 255, 0.95); box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+              <div style="padding: 14px; border-radius: 14px; border: 1.5px solid #cbd5e1; background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(1px);">
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
                   <span style="font-weight: 900; font-size: 13px; color: #0f172a; line-height: 1.4;">
                     પ્રશ્ન ${item.index}. ${escapeHTML(item.question.questionText)}
                   </span>
-                  <span style="background: #f1f5f9; color: #475569; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 6px; flex-shrink: 0;">
+                  <span style="background: rgba(241, 245, 249, 0.85); color: #475569; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; border: 1px solid #cbd5e1;">
                     ${escapeHTML(item.question.category || 'GK')}
                   </span>
                 </div>
 
                 <!-- 2x2 Grid Options -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 11px;">
-                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'A' ? '#10b981' : '#e2e8f0'}; background: ${includeAnswers && item.question.correctAnswer === 'A' ? '#ecfdf5' : '#f8fafc'}; color: ${includeAnswers && item.question.correctAnswer === 'A' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'A' ? '800' : '500'};">
+                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'A' ? '#10b981' : '#cbd5e1'}; background: ${includeAnswers && item.question.correctAnswer === 'A' ? 'rgba(236, 253, 245, 0.85)' : 'rgba(248, 250, 252, 0.65)'}; color: ${includeAnswers && item.question.correctAnswer === 'A' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'A' ? '800' : '600'};">
                     (A) ${escapeHTML(item.question.optionA)}
                   </div>
-                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'B' ? '#10b981' : '#e2e8f0'}; background: ${includeAnswers && item.question.correctAnswer === 'B' ? '#ecfdf5' : '#f8fafc'}; color: ${includeAnswers && item.question.correctAnswer === 'B' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'B' ? '800' : '500'};">
+                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'B' ? '#10b981' : '#cbd5e1'}; background: ${includeAnswers && item.question.correctAnswer === 'B' ? 'rgba(236, 253, 245, 0.85)' : 'rgba(248, 250, 252, 0.65)'}; color: ${includeAnswers && item.question.correctAnswer === 'B' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'B' ? '800' : '600'};">
                     (B) ${escapeHTML(item.question.optionB)}
                   </div>
-                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'C' ? '#10b981' : '#e2e8f0'}; background: ${includeAnswers && item.question.correctAnswer === 'C' ? '#ecfdf5' : '#f8fafc'}; color: ${includeAnswers && item.question.correctAnswer === 'C' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'C' ? '800' : '500'};">
+                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'C' ? '#10b981' : '#cbd5e1'}; background: ${includeAnswers && item.question.correctAnswer === 'C' ? 'rgba(236, 253, 245, 0.85)' : 'rgba(248, 250, 252, 0.65)'}; color: ${includeAnswers && item.question.correctAnswer === 'C' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'C' ? '800' : '600'};">
                     (C) ${escapeHTML(item.question.optionC)}
                   </div>
-                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'D' ? '#10b981' : '#e2e8f0'}; background: ${includeAnswers && item.question.correctAnswer === 'D' ? '#ecfdf5' : '#f8fafc'}; color: ${includeAnswers && item.question.correctAnswer === 'D' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'D' ? '800' : '500'};">
+                  <div style="padding: 8px 10px; border-radius: 8px; border: 1px solid ${includeAnswers && item.question.correctAnswer === 'D' ? '#10b981' : '#cbd5e1'}; background: ${includeAnswers && item.question.correctAnswer === 'D' ? 'rgba(236, 253, 245, 0.85)' : 'rgba(248, 250, 252, 0.65)'}; color: ${includeAnswers && item.question.correctAnswer === 'D' ? '#065f46' : '#1e293b'}; font-weight: ${includeAnswers && item.question.correctAnswer === 'D' ? '800' : '600'};">
                     (D) ${escapeHTML(item.question.optionD)}
                   </div>
                 </div>
@@ -198,13 +198,13 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
                 ${
                   includeAnswers
                     ? `
-                  <div style="margin-top: 8px; padding: 8px 10px; background: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px;">
+                  <div style="margin-top: 8px; padding: 8px 10px; background: rgba(241, 245, 249, 0.75); border-radius: 8px; border: 1px solid #cbd5e1; font-size: 11px;">
                     <div style="font-weight: 800; color: #047857;">
                       સાચો જવાબ: વિકલ્પ (${item.question.correctAnswer})
                     </div>
                     ${
                       item.question.explanation
-                        ? `<div style="color: #475569; font-size: 10.5px; margin-top: 2px;"><strong>સમજૂતી:</strong> ${escapeHTML(item.question.explanation)}</div>`
+                        ? `<div style="color: #334155; font-size: 10.5px; margin-top: 2px;"><strong>સમજૂતી:</strong> ${escapeHTML(item.question.explanation)}</div>`
                         : ''
                     }
                   </div>
@@ -218,7 +218,7 @@ const QuestionPDFExportModal = ({ isOpen, onClose, title = 'Question Paper', sub
           </div>
         </div>
 
-        {/* Footer (Layered above Watermark) */}
+        <!-- Footer -->
         <div style="position: relative; z-index: 10; padding-top: 12px; margin-top: 16px; border-top: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #64748b; font-weight: 600;">
           <span>SarkariMitra — Powered by ForestWaala</span>
           <span>Page ${pageNum} of ${totalPages} • Telegram: t.me/Forestwaala</span>

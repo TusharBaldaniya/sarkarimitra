@@ -71,6 +71,7 @@ model ExamAttempt {
   id             String          @id @default(uuid())
   examId         String
   studentName    String
+  deviceId       String?
   startedAt      DateTime        @default(now())
   submittedAt    DateTime?
   score          Float           @default(0)
@@ -84,6 +85,7 @@ model ExamAttempt {
   answers AttemptAnswer[]
 
   @@index([examId, score, submittedAt])
+  @@index([examId, deviceId])
   @@index([examId])
   @@map("exam_attempts")
 }

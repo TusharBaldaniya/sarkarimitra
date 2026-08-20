@@ -132,9 +132,22 @@ const ExamResults = () => {
     const isFirstPage = pageNum === 1;
 
     container.innerHTML = `
-      <div style="width: 800px; padding: 28px; background: #ffffff; color: #0f172a; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box;">
-        <!-- Header Banner with ForestWaala Circular Logo & Title -->
-        <div style="background: #0f172a; color: #ffffff; padding: 20px 24px; border-radius: 16px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
+      <div style="width: 800px; min-height: 1120px; padding: 28px; background: #ffffff; color: #0f172a; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; position: relative; display: flex; flex-direction: column; justify-content: space-between;">
+        
+        <!-- WATERMARK LAYER ON ALL PAGES -->
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.12; pointer-events: none; z-index: 0; text-align: center;">
+          <img src="/forestwallah.jpg" style="width: 320px; height: 320px; border-radius: 50%; object-fit: cover; margin: 0 auto; filter: grayscale(10%);" />
+          <div style="font-size: 38px; font-weight: 900; letter-spacing: 4px; color: #0f172a; margin-top: 14px; text-transform: uppercase;">
+            FORESTWAALA
+          </div>
+          <div style="font-size: 13px; font-weight: 800; color: #334155; margin-top: 4px; letter-spacing: 1px;">
+            COMPETITIVE EXAM PORTAL
+          </div>
+        </div>
+
+        <div style="position: relative; z-index: 10; flex: 1;">
+          <!-- Header Banner with ForestWaala Circular Logo & Title -->
+          <div style="background: #0f172a; color: #ffffff; padding: 20px 24px; border-radius: 16px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 16px;">
             <img src="/forestwallah.jpg" style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fbbf24; object-fit: cover;" />
             <div>
@@ -295,11 +308,12 @@ const ExamResults = () => {
         </div>
 
         <!-- Footer -->
-        <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+        <div style="position: relative; z-index: 10; margin-top: 20px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
           <span>SarkariMitra — Powered by ForestWaala</span>
           <span>Telegram: https://t.me/Forestwaala</span>
         </div>
       </div>
+    </div>
     `;
   };
 

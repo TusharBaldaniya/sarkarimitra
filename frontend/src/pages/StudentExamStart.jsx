@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy, ExternalLink } from 'lucide-react';
+import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy } from 'lucide-react';
 import api from '../services/api';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
 const TELEGRAM_URL = 'https://t.me/Forestwaala';
+
+// Get or generate anonymous persistent device ID
+const getOrCreateDeviceId = () => {
+  let devId = localStorage.getItem('sarkarimitra_device_id');
+  if (!devId) {
+    devId = 'sm_dev_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('sarkarimitra_device_id', devId);
+  }
+  return devId;
+};
 
 const StudentExamStart = () => {
   const { token } = useParams();
@@ -19,7 +29,7 @@ const StudentExamStart = () => {
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
 
   useEffect(() => {
-    // Check if this exam has already been completed on this device/browser
+    // Check if this exam has already been completed on this browser
     const isDone = localStorage.getItem(`completed_exam_${token}`);
     if (isDone === 'true') {
       setAlreadyCompleted(true);
@@ -64,9 +74,11 @@ const StudentExamStart = () => {
 
   const handleStartExam = async () => {
     setStarting(true);
+    const deviceId = getOrCreateDeviceId();
     try {
       const res = await api.post(`/public/exams/${token}/start`, {
         studentName: studentName.trim(),
+        deviceId,
       });
 
       if (res.data.success) {
@@ -78,6 +90,7 @@ const StudentExamStart = () => {
       const msg = err.response?.data?.message || 'Failed to start exam session.';
       alert(msg);
       if (err.response?.data?.code === 'ALREADY_ATTEMPTED') {
+        setAlreadyCompleted(true);
         setShowInstructions(false);
       }
     } finally {
@@ -145,7 +158,7 @@ const StudentExamStart = () => {
               <div className="space-y-1.5">
                 <h3 className="font-extrabold text-slate-900 text-lg">Exam Already Completed!</h3>
                 <p className="text-xs text-slate-500 leading-relaxed px-2">
-                  You have already submitted an attempt for <strong className="text-slate-800">{examInfo?.title || 'this exam'}</strong> on this device. Multiple attempts are disabled to maintain leaderboard fairness.
+                  An attempt for <strong className="text-slate-800">{examInfo?.title || 'this exam'}</strong> has already been completed on this device. Multiple attempts per device are disabled to ensure leaderboard fairness.
                 </p>
               </div>
 
@@ -278,7 +291,7 @@ const StudentExamStart = () => {
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span><strong>Attempts Limit:</strong> Strictly 1 attempt per candidate & device.</span>
+                  <span><strong>Attempts Limit:</strong> Strictly 1 attempt per device.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
