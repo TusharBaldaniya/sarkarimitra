@@ -340,6 +340,63 @@ const importQuestions = async (req, res) => {
   }
 };
 
+// Bulk delete questions
+const bulkDeleteQuestions = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Question IDs array is required for bulk delete.',
+      });
+    }
+
+    const deleted = await prisma.question.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    return res.json({
+      success: true,
+      message: `Successfully deleted ${deleted.count} questions.`,
+      count: deleted.count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to bulk delete questions.',
+    });
+  }
+};
+
+// Bulk update category for questions
+const bulkUpdateCategory = async (req, res) => {
+  try {
+    const { ids, category } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0 || !category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Question IDs array and target category are required.',
+      });
+    }
+
+    const updated = await prisma.question.updateMany({
+      where: { id: { in: ids } },
+      data: { category: category.trim() },
+    });
+
+    return res.json({
+      success: true,
+      message: `Successfully updated category for ${updated.count} questions.`,
+      count: updated.count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to bulk update question category.',
+    });
+  }
+};
+
 module.exports = {
   getQuestions,
   getQuestionById,
@@ -347,4 +404,6 @@ module.exports = {
   updateQuestion,
   deleteQuestion,
   importQuestions,
+  bulkDeleteQuestions,
+  bulkUpdateCategory,
 };

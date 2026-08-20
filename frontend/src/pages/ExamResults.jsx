@@ -182,7 +182,55 @@ const ExamResults = () => {
             </div>
           </div>
 
-          <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 12px; margin-top: 14px; text-align: center;">
+          <!-- Top 3 Rankers Honor Banner Cards -->
+          ${
+            attempts.length > 0
+              ? `
+            <div style="margin-top: 14px;">
+              <div style="font-size: 11px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                🏆 TOP RANKERS HONOR ROLL
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                ${
+                  attempts[0]
+                    ? `
+                  <div style="background: #fef3c7; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 10px; text-align: center;">
+                    <div style="font-size: 16px;">🥇 <strong style="color: #b45309; font-size: 11px; text-transform: uppercase;">RANK #1</strong></div>
+                    <div style="font-size: 12px; font-weight: 900; color: #78350f; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[0].studentName)}</div>
+                    <div style="font-size: 11px; font-weight: 800; color: #d97706; margin-top: 2px;">${attempts[0].score} / ${attempts[0].totalQuestions} (${attempts[0].percentage}%)</div>
+                  </div>
+                `
+                    : ''
+                }
+                ${
+                  attempts[1]
+                    ? `
+                  <div style="background: #f1f5f9; border: 1.5px solid #94a3b8; border-radius: 12px; padding: 10px; text-align: center;">
+                    <div style="font-size: 16px;">🥈 <strong style="color: #475569; font-size: 11px; text-transform: uppercase;">RANK #2</strong></div>
+                    <div style="font-size: 12px; font-weight: 900; color: #1e293b; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[1].studentName)}</div>
+                    <div style="font-size: 11px; font-weight: 800; color: #475569; margin-top: 2px;">${attempts[1].score} / ${attempts[1].totalQuestions} (${attempts[1].percentage}%)</div>
+                  </div>
+                `
+                    : ''
+                }
+                ${
+                  attempts[2]
+                    ? `
+                  <div style="background: #ffedd5; border: 1.5px solid #ea580c; border-radius: 12px; padding: 10px; text-align: center;">
+                    <div style="font-size: 16px;">🥉 <strong style="color: #c2410c; font-size: 11px; text-transform: uppercase;">RANK #3</strong></div>
+                    <div style="font-size: 12px; font-weight: 900; color: #7c2d12; margin-top: 2px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${escapeHTML(attempts[2].studentName)}</div>
+                    <div style="font-size: 11px; font-weight: 800; color: #ea580c; margin-top: 2px;">${attempts[2].score} / ${attempts[2].totalQuestions} (${attempts[2].percentage}%)</div>
+                  </div>
+                `
+                    : ''
+                }
+              </div>
+            </div>
+          `
+              : ''
+          }
+
+          <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 14px; padding: 10px 14px; margin-top: 14px; text-align: center;">
             <div style="font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase;">
               📢 EXAM POWERED BY FORESTWAALA
             </div>

@@ -6,6 +6,8 @@ const {
   updateQuestion,
   deleteQuestion,
   importQuestions,
+  bulkDeleteQuestions,
+  bulkUpdateCategory,
 } = require('../controllers/questionController');
 const authMiddleware = require('../middleware/auth');
 
@@ -15,6 +17,8 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.get('/', getQuestions);
+router.post('/bulk-delete', bulkDeleteQuestions);
+router.patch('/bulk-category', bulkUpdateCategory);
 router.get('/:id', getQuestionById);
 router.post('/', createQuestion);
 router.put('/:id', updateQuestion);
