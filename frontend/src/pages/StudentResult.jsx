@@ -174,13 +174,12 @@ const StudentResult = () => {
                       return (
                         <div
                           key={q.questionId || idx}
-                          className={`p-4 rounded-2xl border text-xs space-y-3 ${
-                            q.isCorrect
+                          className={`p-4 rounded-2xl border text-xs space-y-3 ${q.isCorrect
                               ? 'border-emerald-200 bg-emerald-50/20'
                               : isUnans
-                              ? 'border-slate-200 bg-slate-50/50'
-                              : 'border-rose-200 bg-rose-50/20'
-                          }`}
+                                ? 'border-slate-200 bg-slate-50/50'
+                                : 'border-rose-200 bg-rose-50/20'
+                            }`}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <span className="font-extrabold text-slate-900 text-sm leading-snug">
@@ -236,7 +235,7 @@ const StudentResult = () => {
                           </div>
 
                           {/* Summary Answer Values Box */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11.5px] pt-1">
+                          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11.5px] pt-1">
                             <div
                               className={`p-2.5 rounded-xl border ${
                                 q.isCorrect
@@ -264,7 +263,7 @@ const StudentResult = () => {
                                 Option {q.correctAnswer}: {correctVal}
                               </span>
                             </div>
-                          </div>
+                          </div> */}
 
                           {q.explanation && (
                             <div className="p-3 bg-slate-100 rounded-xl text-slate-700 text-[11px] border border-slate-200">
