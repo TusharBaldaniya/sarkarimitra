@@ -29,11 +29,11 @@ const StudentExamStart = () => {
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
 
   useEffect(() => {
-    // Check if this exam has already been completed on this browser
-    const isDone = localStorage.getItem(`completed_exam_${token}`);
-    if (isDone === 'true') {
-      setAlreadyCompleted(true);
-    }
+    // Check if this exam has already been completed on this browser (temporarily commented out)
+    // const isDone = localStorage.getItem(`completed_exam_${token}`);
+    // if (isDone === 'true') {
+    //   setAlreadyCompleted(true);
+    // }
     fetchExamInfo();
   }, [token]);
 

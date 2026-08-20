@@ -129,24 +129,23 @@ const startPublicExam = async (req, res) => {
       });
     }
 
-    // Check deviceId uniqueness per exam (Allows multiple different students with same name on different devices)
-    if (deviceId && typeof deviceId === 'string' && deviceId.trim().length > 0) {
-      const existingDeviceAttempt = await prisma.examAttempt.findFirst({
-        where: {
-          examId: exam.id,
-          deviceId: deviceId.trim(),
-          status: { in: ['SUBMITTED'] },
-        },
-      });
-
-      if (existingDeviceAttempt) {
-        return res.status(400).json({
-          success: false,
-          code: 'ALREADY_ATTEMPTED',
-          message: 'An attempt has already been submitted for this exam from this device. Multiple attempts per device are not permitted.',
-        });
-      }
-    }
+    // Multiple attempts validation temporarily commented out for testing
+    // if (deviceId && typeof deviceId === 'string' && deviceId.trim().length > 0) {
+    //   const existingDeviceAttempt = await prisma.examAttempt.findFirst({
+    //     where: {
+    //       examId: exam.id,
+    //       deviceId: deviceId.trim(),
+    //       status: { in: ['SUBMITTED'] },
+    //     },
+    //   });
+    //   if (existingDeviceAttempt) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       code: 'ALREADY_ATTEMPTED',
+    //       message: 'An attempt has already been submitted for this exam from this device.',
+    //     });
+    //   }
+    // }
 
     // Create ExamAttempt record
     const startedAt = new Date();

@@ -15,6 +15,7 @@ app.use(helmet());
 
 // CORS configuration
 const allowedOrigins = [
+  'https://sarkarimitra-portal.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
   process.env.FRONTEND_URL,

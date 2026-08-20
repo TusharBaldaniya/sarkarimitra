@@ -1,5 +1,4 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
 const {
   getPublicExamInfo,
   startPublicExam,
@@ -8,7 +7,8 @@ const {
 
 const router = express.Router();
 
-// Rate limiter for starting exams (max 15 attempts per 15 mins per IP)
+// Rate limiters temporarily commented out as requested
+// const rateLimit = require('express-rate-limit');
 // const startLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,
 //   max: 15,
@@ -19,8 +19,6 @@ const router = express.Router();
 //   standardHeaders: true,
 //   legacyHeaders: false,
 // });
-
-// Rate limiter for submitting exams (max 15 submissions per 15 mins per IP)
 // const submitLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,
 //   max: 15,
@@ -32,9 +30,9 @@ const router = express.Router();
 //   legacyHeaders: false,
 // });
 
-// Public student endpoints
+// Public student endpoints (Rate limiting disabled)
 router.get('/:token', getPublicExamInfo);
-router.post('/:token/start', startLimiter, startPublicExam);
-router.post('/:token/submit', submitLimiter, submitPublicExam);
+router.post('/:token/start', startPublicExam);
+router.post('/:token/submit', submitPublicExam);
 
 module.exports = router;
