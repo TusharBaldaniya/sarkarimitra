@@ -123,7 +123,9 @@ const StudentExamInterface = () => {
         // Clear local storage draft
         localStorage.removeItem(`draft_answers_${sessionData.attemptId}`);
         sessionStorage.removeItem(`exam_session_${token}`);
-        // Store result for display page
+        // Save persistent completion marker and result
+        localStorage.setItem(`completed_exam_${token}`, 'true');
+        localStorage.setItem(`completed_result_${token}`, JSON.stringify(res.data.data));
         sessionStorage.setItem(`exam_result_${token}`, JSON.stringify(res.data.data));
         navigate(`/exam/${token}/result`);
       }

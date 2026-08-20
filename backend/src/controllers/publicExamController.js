@@ -129,6 +129,26 @@ const startPublicExam = async (req, res) => {
       });
     }
 
+    // Prevent duplicate exam attempts by candidate name
+    const existingAttempt = await prisma.examAttempt.findFirst({
+      where: {
+        examId: exam.id,
+        studentName: {
+          equals: trimmedName,
+          mode: 'insensitive',
+        },
+        status: { in: ['SUBMITTED', 'AUTO_SUBMITTED', 'IN_PROGRESS'] },
+      },
+    });
+
+    if (existingAttempt) {
+      return res.status(400).json({
+        success: false,
+        code: 'ALREADY_ATTEMPTED',
+        message: `Candidate "${trimmedName}" has already submitted an attempt for this exam. Multiple attempts are not permitted.`,
+      });
+    }
+
     // Create ExamAttempt record
     const startedAt = new Date();
     const attempt = await prisma.examAttempt.create({

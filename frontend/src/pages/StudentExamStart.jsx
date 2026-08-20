@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles } from 'lucide-react';
+import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
@@ -16,8 +16,14 @@ const StudentExamStart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
 
   useEffect(() => {
+    // Check if this exam has already been completed on this device/browser
+    const isDone = localStorage.getItem(`completed_exam_${token}`);
+    if (isDone === 'true') {
+      setAlreadyCompleted(true);
+    }
     fetchExamInfo();
   }, [token]);
 
@@ -34,6 +40,16 @@ const StudentExamStart = () => {
       setError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewExistingResult = () => {
+    const rawResult = localStorage.getItem(`completed_result_${token}`);
+    if (rawResult) {
+      sessionStorage.setItem(`exam_result_${token}`, rawResult);
+      navigate(`/exam/${token}/result`);
+    } else {
+      alert('Your score was submitted. Please check our Telegram channel for the PDF leaderboard!');
     }
   };
 
@@ -59,7 +75,11 @@ const StudentExamStart = () => {
         navigate(`/exam/${token}/test`);
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to start exam session.');
+      const msg = err.response?.data?.message || 'Failed to start exam session.';
+      alert(msg);
+      if (err.response?.data?.code === 'ALREADY_ATTEMPTED') {
+        setShowInstructions(false);
+      }
     } finally {
       setStarting(false);
     }
@@ -82,7 +102,6 @@ const StudentExamStart = () => {
               alt="ForestWaala Banner"
               className="w-full h-full object-cover opacity-80"
               onError={(e) => {
-                // Fallback to logo if banner fails to load
                 e.target.style.display = 'none';
               }}
             />
@@ -95,7 +114,7 @@ const StudentExamStart = () => {
               alt="ForestWaala Logo"
               className="w-20 h-20 rounded-full border-4 border-slate-950 shadow-2xl object-cover mx-auto ring-2 ring-brand-500"
             />
-            
+
             <div className="mt-3 space-y-1">
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center justify-center gap-2">
                 <span className="text-white">સરકારી</span>
@@ -115,6 +134,40 @@ const StudentExamStart = () => {
             <div className="py-12 text-center text-slate-400 text-sm">
               <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
               <span>Validating exam link...</span>
+            </div>
+          ) : alreadyCompleted ? (
+            /* Already Attempted Screen */
+            <div className="py-4 text-center space-y-5">
+              <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-inner">
+                <Trophy className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="font-extrabold text-slate-900 text-lg">Exam Already Completed!</h3>
+                <p className="text-xs text-slate-500 leading-relaxed px-2">
+                  You have already submitted an attempt for <strong className="text-slate-800">{examInfo?.title || 'this exam'}</strong> on this device. Multiple attempts are disabled to maintain leaderboard fairness.
+                </p>
+              </div>
+
+              <div className="space-y-2.5 pt-2">
+                <button
+                  onClick={handleViewExistingResult}
+                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-2xl font-extrabold text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  <span>View My Test Score</span>
+                </button>
+
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-extrabold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2 block"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Join Telegram for PDF Leaderboard</span>
+                </a>
+              </div>
             </div>
           ) : error ? (
             <div className="py-8 text-center space-y-4">
@@ -225,7 +278,7 @@ const StudentExamStart = () => {
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span><strong>Marking Scheme:</strong> +1 mark for each correct answer. No negative marking.</span>
+                  <span><strong>Attempts Limit:</strong> Strictly 1 attempt per candidate & device.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
