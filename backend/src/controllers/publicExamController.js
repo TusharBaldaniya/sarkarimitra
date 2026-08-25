@@ -224,7 +224,7 @@ const startPublicExam = async (req, res) => {
       return res.status(400).json({
         success: false,
         code: 'DUPLICATE_NAME',
-        message: `The name '${trimmedName}' has already been registered for this exam. Please enter your surname or initial to make your name unique (e.g. '${trimmedName} Ahir' or '${trimmedName} B').`,
+        message: `The name '${trimmedName}' has already been registered for this exam. Please enter your surname or initial to make your name unique.`,
       });
     }
 

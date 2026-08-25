@@ -270,7 +270,7 @@ const StudentExamStart = () => {
                       {nameError}
                     </p>
                     <p className="text-[11px] text-amber-700 font-bold pt-1">
-                      💡 ટિપ: કૃપા કરીને તમારું પૂરું નામ અથવા અટક સાથે ઉમેરો (દા.ત. {studentName} Ahir અથવા {studentName} B).
+                      💡 ટિપ: કૃપા કરીને તમારું પૂરું નામ અથવા અટક સાથે ઉમેરો.
                     </p>
                   </div>
                 )}
