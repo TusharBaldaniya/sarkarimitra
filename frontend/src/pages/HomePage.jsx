@@ -52,25 +52,6 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
-
-            {/* Quick Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                to="/practice"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-extrabold shadow-md shadow-brand-600/30 transition-all"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Practice Portal</span>
-              </Link>
-
-              <Link
-                to="/admin/login"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-xl text-xs font-bold transition-all"
-              >
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span className="hidden sm:inline">Admin Login</span>
-              </Link>
-            </div>
           </div>
         </header>
 
@@ -257,14 +238,6 @@ const HomePage = () => {
 
           <p>© {new Date().getFullYear()} SarkariMitra Exam Portal. All rights reserved.</p>
 
-          <div className="flex items-center gap-4 text-slate-400">
-            <Link to="/practice" className="hover:text-white transition-colors">
-              Practice Portal
-            </Link>
-            <Link to="/admin/login" className="hover:text-white transition-colors">
-              Admin Login
-            </Link>
-          </div>
         </div>
       </footer>
     </div>
