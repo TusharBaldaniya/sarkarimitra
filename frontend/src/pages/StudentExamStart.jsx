@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy, BookOpen, Home } from 'lucide-react';
 import api from '../services/api';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
@@ -26,6 +26,7 @@ const StudentExamStart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [nameError, setNameError] = useState('');
 
   const isPracticeQuery = new URLSearchParams(window.location.search).get('practice') === 'true';
@@ -41,10 +42,14 @@ const StudentExamStart = () => {
       const res = await api.get(`/public/exams/${token}`, {
         params: { practice: isPracticeQuery },
       });
-      if (res.data.success) {
+
+      if (res.data && res.data.success && res.data.data) {
         setExamInfo(res.data.data);
+      } else {
+        setError(res.data?.message || 'This exam is currently unavailable.');
       }
     } catch (err) {
+      console.error('Fetch public exam error:', err);
       const msg = err.response?.data?.message || 'Invalid or expired exam token link.';
       setError(msg);
     } finally {
@@ -83,10 +88,12 @@ const StudentExamStart = () => {
         isPractice: isPracticeQuery || examInfo?.isPracticeMode,
       });
 
-      if (res.data.success) {
+      if (res.data && res.data.success && res.data.data) {
         // Store attempt payload in sessionStorage for exam session
         sessionStorage.setItem(`exam_session_${token}`, JSON.stringify(res.data.data));
         navigate(`/exam/${token}/test`);
+      } else {
+        alert(res.data?.message || 'Failed to start exam session.');
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to start exam session.';
@@ -154,6 +161,51 @@ const StudentExamStart = () => {
               <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
               <span>Validating exam link...</span>
             </div>
+          ) : error || (!examInfo && !alreadyCompleted) ? (
+            /* Exam Unavailable / Disabled / Expired Screen */
+            <div className="py-4 text-center space-y-5">
+              <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-inner">
+                <AlertCircle className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="font-extrabold text-slate-900 text-lg">Exam Unavailable</h3>
+                <p className="text-xs text-slate-600 leading-relaxed px-2">
+                  {error || 'This exam link is invalid or is currently unavailable.'}
+                </p>
+              </div>
+
+              {/* Action Buttons to Practice Portal or Home */}
+              <div className="space-y-2.5 pt-2">
+                <Link
+                  to="/practice"
+                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-2xl font-extrabold text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>Go to Practice Portal</span>
+                </Link>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/"
+                    className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-slate-200"
+                  >
+                    <Home className="w-3.5 h-3.5" />
+                    <span>Home Page</span>
+                  </Link>
+
+                  <a
+                    href={TELEGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-sky-100"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Telegram</span>
+                  </a>
+                </div>
+              </div>
+            </div>
           ) : alreadyCompleted ? (
             /* Already Attempted Screen */
             <div className="py-4 text-center space-y-5">
@@ -181,21 +233,11 @@ const StudentExamStart = () => {
                   href={TELEGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-extrabold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2 block"
+                  className="w-full py-3 bg-sky-50 hover:bg-sky-600 text-white rounded-2xl font-extrabold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-2 block"
                 >
                   <Send className="w-4 h-4" />
                   <span>Join Telegram for PDF Leaderboard</span>
                 </a>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="py-8 text-center space-y-4">
-              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 text-base">Exam Unavailable</h3>
-                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{error}</p>
               </div>
             </div>
           ) : !showInstructions ? (
@@ -203,9 +245,9 @@ const StudentExamStart = () => {
               {/* Exam Metadata Info Box */}
               <div className="space-y-3">
                 <h2 className="text-lg font-black text-slate-900 text-center leading-snug">
-                  {examInfo.title}
+                  {examInfo?.title || 'Exam'}
                 </h2>
-                {examInfo.description && (
+                {examInfo?.description && (
                   <p className="text-xs text-slate-500 text-center leading-relaxed">{examInfo.description}</p>
                 )}
 
@@ -213,13 +255,13 @@ const StudentExamStart = () => {
                   <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center">
                     <HelpCircle className="w-4 h-4 text-brand-600 mx-auto mb-1" />
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Questions</span>
-                    <span className="font-extrabold text-slate-800 text-sm">{examInfo.questionCount} Questions</span>
+                    <span className="font-extrabold text-slate-800 text-sm">{examInfo?.questionCount || 0} Questions</span>
                   </div>
 
                   <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center">
                     <Clock className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Duration</span>
-                    <span className="font-extrabold text-slate-800 text-sm">{examInfo.durationMinutes} Minutes</span>
+                    <span className="font-extrabold text-slate-800 text-sm">{examInfo?.durationMinutes || 0} Minutes</span>
                   </div>
                 </div>
               </div>
@@ -309,11 +351,11 @@ const StudentExamStart = () => {
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-2.5">
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span><strong>Total Questions:</strong> {examInfo.questionCount} MCQs</span>
+                  <span><strong>Total Questions:</strong> {examInfo?.questionCount || 0} MCQs</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  <span><strong>Time Limit:</strong> {examInfo.durationMinutes} Minutes strictly</span>
+                  <span><strong>Time Limit:</strong> {examInfo?.durationMinutes || 0} Minutes strictly</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
