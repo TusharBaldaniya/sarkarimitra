@@ -173,25 +173,13 @@ const StudentPracticePortal = () => {
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
-                          exam.statusBadge === 'LIVE_NOW'
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : exam.statusBadge === 'UPCOMING'
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-brand-500/20 text-brand-300 border border-brand-500/30'
-                        }`}
-                      >
-                        {exam.statusBadge === 'LIVE_NOW'
-                          ? '🟢 LIVE EXAM'
-                          : exam.statusBadge === 'UPCOMING'
-                          ? '⏳ UPCOMING'
-                          : '📚 PRACTICE ARCHIVE'}
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                        📚 PRACTICE ARCHIVE
                       </span>
 
-                      <span className="text-[11px] text-slate-400 font-semibold">
+                      {/* <span className="text-[11px] text-slate-400 font-semibold">
                         {exam.totalAttempts} Attempts
-                      </span>
+                      </span> */}
                     </div>
 
                     <h3 className="font-extrabold text-white text-base sm:text-lg leading-snug">

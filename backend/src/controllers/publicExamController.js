@@ -48,9 +48,12 @@ const getPublicPracticeExams = async (req, res) => {
   try {
     const search = req.query.search ? req.query.search.trim() : '';
 
+    const now = new Date();
+
     const where = {
       isActive: true,
       allowPractice: true,
+      endAt: { lt: now }, // Only past/completed exams whose endAt window has expired
     };
 
     if (search) {
