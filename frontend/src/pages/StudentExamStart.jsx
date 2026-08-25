@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy, BookOpen, Home } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Clock, HelpCircle, ArrowRight, AlertCircle, CheckCircle2, Youtube, Send, Sparkles, Trophy } from 'lucide-react';
 import api from '../services/api';
 
 const YOUTUBE_URL = 'https://www.youtube.com/@ForestWaala';
@@ -175,35 +175,27 @@ const StudentExamStart = () => {
                 </p>
               </div>
 
-              {/* Action Buttons to Practice Portal or Home */}
-              <div className="space-y-2.5 pt-2">
-                <Link
-                  to="/practice"
-                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-2xl font-extrabold text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2"
+              {/* Community Buttons for Telegram & YouTube Only */}
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-3 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-2xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-sky-100 shadow-sm"
                 >
-                  <BookOpen className="w-4 h-4" />
-                  <span>Go to Practice Portal</span>
-                </Link>
+                  <Send className="w-4 h-4" />
+                  <span>Join Telegram</span>
+                </a>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    to="/"
-                    className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-slate-200"
-                  >
-                    <Home className="w-3.5 h-3.5" />
-                    <span>Home Page</span>
-                  </Link>
-
-                  <a
-                    href={TELEGRAM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-2.5 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-sky-100"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Telegram</span>
-                  </a>
-                </div>
+                <a
+                  href={YOUTUBE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-3 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-2xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-rose-100 shadow-sm"
+                >
+                  <Youtube className="w-4 h-4" />
+                  <span>YouTube Channel</span>
+                </a>
               </div>
             </div>
           ) : alreadyCompleted ? (
