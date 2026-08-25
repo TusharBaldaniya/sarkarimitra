@@ -26,7 +26,7 @@ const StudentExamStart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
-  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
+  const [nameError, setNameError] = useState('');
 
   const isPracticeQuery = new URLSearchParams(window.location.search).get('practice') === 'true';
 
@@ -68,11 +68,13 @@ const StudentExamStart = () => {
       alert('Please enter your full name (at least 2 characters).');
       return;
     }
+    setNameError('');
     setShowInstructions(true);
   };
 
   const handleStartExam = async () => {
     setStarting(true);
+    setNameError('');
     const deviceId = getOrCreateDeviceId();
     try {
       const res = await api.post(`/public/exams/${token}/start`, {
@@ -88,10 +90,14 @@ const StudentExamStart = () => {
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to start exam session.';
-      alert(msg);
-      if (err.response?.data?.code === 'ALREADY_ATTEMPTED') {
+      if (err.response?.data?.code === 'DUPLICATE_NAME') {
+        setNameError(msg);
+        setShowInstructions(false);
+      } else if (err.response?.data?.code === 'ALREADY_ATTEMPTED') {
         setAlreadyCompleted(true);
         setShowInstructions(false);
+      } else {
+        alert(msg);
       }
     } finally {
       setStarting(false);
@@ -220,6 +226,21 @@ const StudentExamStart = () => {
 
               {/* Student Name Form */}
               <form onSubmit={handleNameSubmit} className="space-y-4 pt-2 border-t border-slate-100">
+                {nameError && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs font-semibold leading-relaxed space-y-1">
+                    <div className="font-extrabold flex items-center gap-1.5 text-amber-700">
+                      <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                      <span>નામ પહેલેથી જ નોંધાયેલ છે (Name Already Taken)</span>
+                    </div>
+                    <p className="text-[11.5px] text-amber-800">
+                      {nameError}
+                    </p>
+                    <p className="text-[11px] text-amber-700 font-bold pt-1">
+                      💡 ટિપ: કૃપા કરીને તમારું પૂરું નામ અથવા અટક સાથે ઉમેરો (દા.ત. {studentName} Ahir અથવા {studentName} B).
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
                     Enter Candidate Full Name <span className="text-rose-500">*</span>
@@ -227,12 +248,17 @@ const StudentExamStart = () => {
                   <input
                     type="text"
                     value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    placeholder="Enter your full name"
+                    onChange={(e) => {
+                      setStudentName(e.target.value);
+                      if (nameError) setNameError('');
+                    }}
+                    placeholder="Enter full name (e.g. Sagar Ahir)"
                     required
                     minLength={2}
                     maxLength={100}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-medium"
+                    className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-medium ${
+                      nameError ? 'border-amber-400 ring-2 ring-amber-200' : 'border-slate-200'
+                    }`}
                   />
                 </div>
 

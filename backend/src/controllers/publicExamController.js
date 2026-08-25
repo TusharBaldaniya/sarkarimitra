@@ -209,6 +209,25 @@ const startPublicExam = async (req, res) => {
 
     const isPracticeAttempt = statusCheck.isPracticeMode || Boolean(isPractice);
 
+    // Validate studentName uniqueness per exam (case-insensitive)
+    const existingNameAttempt = await prisma.examAttempt.findFirst({
+      where: {
+        examId: exam.id,
+        studentName: {
+          equals: trimmedName,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    if (existingNameAttempt) {
+      return res.status(400).json({
+        success: false,
+        code: 'DUPLICATE_NAME',
+        message: `The name '${trimmedName}' has already been registered for this exam. Please enter your surname or initial to make your name unique (e.g. '${trimmedName} Ahir' or '${trimmedName} B').`,
+      });
+    }
+
     // Create ExamAttempt record
     const startedAt = new Date();
     const attempt = await prisma.examAttempt.create({
