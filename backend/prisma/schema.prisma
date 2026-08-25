@@ -45,6 +45,7 @@ model Exam {
   durationMinutes Int
   isActive        Boolean       @default(true)
   showAnswersToStudent Boolean  @default(true)
+  allowPractice   Boolean       @default(true)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   examQuestions   ExamQuestion[]
@@ -72,6 +73,7 @@ model ExamAttempt {
   examId         String
   studentName    String
   deviceId       String?
+  isPractice     Boolean         @default(false)
   startedAt      DateTime        @default(now())
   submittedAt    DateTime?
   score          Float           @default(0)

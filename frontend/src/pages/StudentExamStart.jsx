@@ -28,12 +28,9 @@ const StudentExamStart = () => {
   const [starting, setStarting] = useState(false);
   const [alreadyCompleted, setAlreadyCompleted] = useState(false);
 
+  const isPracticeQuery = new URLSearchParams(window.location.search).get('practice') === 'true';
+
   useEffect(() => {
-    // Check if this exam has already been completed on this browser (temporarily commented out)
-    // const isDone = localStorage.getItem(`completed_exam_${token}`);
-    // if (isDone === 'true') {
-    //   setAlreadyCompleted(true);
-    // }
     fetchExamInfo();
   }, [token]);
 
@@ -41,7 +38,9 @@ const StudentExamStart = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.get(`/public/exams/${token}`);
+      const res = await api.get(`/public/exams/${token}`, {
+        params: { practice: isPracticeQuery },
+      });
       if (res.data.success) {
         setExamInfo(res.data.data);
       }
@@ -79,6 +78,7 @@ const StudentExamStart = () => {
       const res = await api.post(`/public/exams/${token}/start`, {
         studentName: studentName.trim(),
         deviceId,
+        isPractice: isPracticeQuery || examInfo?.isPracticeMode,
       });
 
       if (res.data.success) {

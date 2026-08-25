@@ -13,10 +13,11 @@ import ExamForm from './pages/ExamForm';
 import ExamResults from './pages/ExamResults';
 import StudentAttemptDetail from './pages/StudentAttemptDetail';
 
-// Student Exam Pages
+// Student Exam & Practice Pages
 import StudentExamStart from './pages/StudentExamStart';
 import StudentExamInterface from './pages/StudentExamInterface';
 import StudentResult from './pages/StudentResult';
+import StudentPracticePortal from './pages/StudentPracticePortal';
 
 function App() {
   return (
@@ -97,7 +98,8 @@ function App() {
             />
           </Route>
 
-          {/* Student Public Exam Interface Routes (Mobile-First) */}
+          {/* Student Public Exam & Practice Interface Routes */}
+          <Route path="/practice" element={<StudentPracticePortal />} />
           <Route path="/exam/:token" element={<StudentExamStart />} />
           <Route path="/exam/:token/test" element={<StudentExamInterface />} />
           <Route path="/exam/:token/result" element={<StudentResult />} />

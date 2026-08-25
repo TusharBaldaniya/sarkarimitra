@@ -1,7 +1,7 @@
 const prisma = require('../utils/prisma');
 
 // Validate exam public availability status
-const validateExamAvailability = (exam) => {
+const validateExamAvailability = (exam, isPracticeMode = false) => {
   if (!exam) {
     return { valid: false, code: 'NOT_FOUND', message: 'Exam not found. Invalid exam link.' };
   }
@@ -23,22 +23,97 @@ const validateExamAvailability = (exam) => {
     };
   }
 
+  // If exam has passed endAt date:
   if (now > endAt) {
+    if (exam.allowPractice || isPracticeMode) {
+      return {
+        valid: true,
+        isPracticeMode: true,
+        message: 'Live test window has ended. You are taking this exam in Practice Mode.',
+      };
+    }
     return {
       valid: false,
       code: 'EXPIRED',
-      message: 'This exam has expired and is no longer accepting attempts.',
+      message: 'This exam has expired and is no longer accepting practice attempts.',
       endAt: exam.endAt,
     };
   }
 
-  return { valid: true };
+  return { valid: true, isPracticeMode: Boolean(isPracticeMode) };
+};
+
+// GET /api/public/exams/practice/list - Public endpoint to list all approved practice exams
+const getPublicPracticeExams = async (req, res) => {
+  try {
+    const search = req.query.search ? req.query.search.trim() : '';
+
+    const where = {
+      isActive: true,
+      allowPractice: true,
+    };
+
+    if (search) {
+      where.title = { contains: search, mode: 'insensitive' };
+    }
+
+    const rawExams = await prisma.exam.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: {
+            examQuestions: true,
+            attempts: true,
+          },
+        },
+      },
+    });
+
+    const now = new Date();
+
+    const practiceExams = rawExams.map((exam) => {
+      const isExpired = now > new Date(exam.endAt);
+      const isUpcoming = now < new Date(exam.startAt);
+
+      let statusBadge = 'PRACTICE_AVAILABLE';
+      if (isUpcoming) statusBadge = 'UPCOMING';
+      else if (!isExpired) statusBadge = 'LIVE_NOW';
+
+      return {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description,
+        publicToken: exam.publicToken,
+        durationMinutes: exam.durationMinutes,
+        startAt: exam.startAt,
+        endAt: exam.endAt,
+        isExpired,
+        isUpcoming,
+        statusBadge,
+        questionCount: exam._count.examQuestions,
+        totalAttempts: exam._count.attempts,
+      };
+    });
+
+    return res.json({
+      success: true,
+      data: practiceExams,
+    });
+  } catch (error) {
+    console.error('Error fetching practice exams:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch practice exams list.',
+    });
+  }
 };
 
 // GET /api/public/exams/:token - Fetch exam info for student start page
 const getPublicExamInfo = async (req, res) => {
   try {
     const { token } = req.params;
+    const isPracticeRequested = req.query.practice === 'true';
 
     const exam = await prisma.exam.findUnique({
       where: { publicToken: token },
@@ -49,7 +124,7 @@ const getPublicExamInfo = async (req, res) => {
       },
     });
 
-    const statusCheck = validateExamAvailability(exam);
+    const statusCheck = validateExamAvailability(exam, isPracticeRequested);
     if (!statusCheck.valid) {
       return res.status(400).json({
         success: false,
@@ -69,6 +144,8 @@ const getPublicExamInfo = async (req, res) => {
         startAt: exam.startAt,
         endAt: exam.endAt,
         showAnswersToStudent: exam.showAnswersToStudent,
+        allowPractice: exam.allowPractice,
+        isPracticeMode: statusCheck.isPracticeMode || false,
       },
     });
   } catch (error) {
@@ -80,11 +157,11 @@ const getPublicExamInfo = async (req, res) => {
   }
 };
 
-// POST /api/public/exams/:token/start - Student starts exam
+// POST /api/public/exams/:token/start - Student starts exam (Live or Practice)
 const startPublicExam = async (req, res) => {
   try {
     const { token } = req.params;
-    const { studentName, deviceId } = req.body;
+    const { studentName, deviceId, isPractice } = req.body;
 
     if (!studentName || typeof studentName !== 'string' || studentName.trim().length < 2) {
       return res.status(400).json({
@@ -113,7 +190,7 @@ const startPublicExam = async (req, res) => {
       },
     });
 
-    const statusCheck = validateExamAvailability(exam);
+    const statusCheck = validateExamAvailability(exam, isPractice);
     if (!statusCheck.valid) {
       return res.status(400).json({
         success: false,
@@ -129,23 +206,7 @@ const startPublicExam = async (req, res) => {
       });
     }
 
-    // Multiple attempts validation temporarily commented out for testing
-    // if (deviceId && typeof deviceId === 'string' && deviceId.trim().length > 0) {
-    //   const existingDeviceAttempt = await prisma.examAttempt.findFirst({
-    //     where: {
-    //       examId: exam.id,
-    //       deviceId: deviceId.trim(),
-    //       status: { in: ['SUBMITTED'] },
-    //     },
-    //   });
-    //   if (existingDeviceAttempt) {
-    //     return res.status(400).json({
-    //       success: false,
-    //       code: 'ALREADY_ATTEMPTED',
-    //       message: 'An attempt has already been submitted for this exam from this device.',
-    //     });
-    //   }
-    // }
+    const isPracticeAttempt = statusCheck.isPracticeMode || Boolean(isPractice);
 
     // Create ExamAttempt record
     const startedAt = new Date();
@@ -154,6 +215,7 @@ const startPublicExam = async (req, res) => {
         examId: exam.id,
         studentName: trimmedName,
         deviceId: deviceId ? deviceId.trim() : null,
+        isPractice: isPracticeAttempt,
         startedAt,
         totalQuestions: exam.examQuestions.length,
         status: 'IN_PROGRESS',
@@ -174,12 +236,13 @@ const startPublicExam = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Exam started successfully.',
+      message: isPracticeAttempt ? 'Practice test started.' : 'Exam started successfully.',
       data: {
         attemptId: attempt.id,
         studentName: attempt.studentName,
         examTitle: exam.title,
         durationMinutes: exam.durationMinutes,
+        isPracticeMode: isPracticeAttempt,
         startedAt: attempt.startedAt,
         questions: sanitizedQuestions,
       },
@@ -327,6 +390,9 @@ const submitPublicExam = async (req, res) => {
       }),
     ]);
 
+    // For practice attempts, always display answer key & explanations to student!
+    const shouldShowAnswers = attempt.isPractice || exam.showAnswersToStudent;
+
     return res.json({
       success: true,
       message: 'Exam submitted successfully.',
@@ -342,8 +408,9 @@ const submitPublicExam = async (req, res) => {
         unanswered: unansweredCount,
         submittedAt,
         status: finalStatus,
-        showAnswersToStudent: exam.showAnswersToStudent,
-        questions: exam.showAnswersToStudent ? questionResults : null,
+        isPracticeMode: attempt.isPractice,
+        showAnswersToStudent: shouldShowAnswers,
+        questions: shouldShowAnswers ? questionResults : null,
       },
     });
   } catch (error) {
@@ -356,6 +423,7 @@ const submitPublicExam = async (req, res) => {
 };
 
 module.exports = {
+  getPublicPracticeExams,
   getPublicExamInfo,
   startPublicExam,
   submitPublicExam,

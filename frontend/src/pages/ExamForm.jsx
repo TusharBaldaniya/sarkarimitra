@@ -11,6 +11,7 @@ import {
   Upload,
   Eye,
   EyeOff,
+  BookOpen,
 } from 'lucide-react';
 import api from '../services/api';
 import QuestionFormModal from '../components/QuestionFormModal';
@@ -18,6 +19,7 @@ import CSVImportModal from '../components/CSVImportModal';
 
 const CATEGORIES = [
   'All',
+  'Environment',
   'General Knowledge',
   'History',
   'Geography',
@@ -41,6 +43,7 @@ const ExamForm = () => {
   const [endAt, setEndAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [showAnswersToStudent, setShowAnswersToStudent] = useState(true);
+  const [allowPractice, setAllowPractice] = useState(true);
 
   // Questions selection
   const [allQuestions, setAllQuestions] = useState([]);
@@ -61,73 +64,49 @@ const ExamForm = () => {
     fetchInitialData();
   }, [id]);
 
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const pad = (n) => (n < 10 ? `0${n}` : n);
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-      date.getHours()
-    )}:${pad(date.getMinutes())}`;
-  };
-
   const fetchInitialData = async () => {
     setLoading(true);
+    setError('');
     try {
-      // Fetch questions from bank (sorted newest first)
-      const qRes = await api.get('/questions?limit=1000');
-      const bankQuestions = qRes.data.data || [];
-      setAllQuestions(bankQuestions);
+      // 1. Fetch all available question bank items
+      const qRes = await api.get('/questions', { params: { limit: 1000 } });
+      let questionsList = [];
+      if (qRes.data.success) {
+        questionsList = qRes.data.data;
+        setAllQuestions(questionsList);
+      }
 
+      // 2. If editing existing exam, load details
       if (isEdit) {
         const examRes = await api.get(`/exams/${id}`);
-        const exam = examRes.data.data;
-        setTitle(exam.title || '');
-        setDescription(exam.description || '');
-        setStartAt(formatDateForInput(exam.startAt));
-        setEndAt(formatDateForInput(exam.endAt));
-        setDurationMinutes(exam.durationMinutes || 30);
-        setShowAnswersToStudent(exam.showAnswersToStudent !== undefined ? Boolean(exam.showAnswersToStudent) : true);
+        if (examRes.data.success) {
+          const exam = examRes.data.data;
+          setTitle(exam.title);
+          setDescription(exam.description || '');
+          setShowAnswersToStudent(exam.showAnswersToStudent !== undefined ? exam.showAnswersToStudent : true);
+          setAllowPractice(exam.allowPractice !== undefined ? exam.allowPractice : true);
 
-        if (Array.isArray(exam.questions)) {
-          setSelectedQuestionIds(exam.questions.map((q) => q.id));
+          // Convert ISO dates to HTML datetime-local format
+          if (exam.startAt) setStartAt(new Date(exam.startAt).toISOString().slice(0, 16));
+          if (exam.endAt) setEndAt(new Date(exam.endAt).toISOString().slice(0, 16));
+          setDurationMinutes(exam.durationMinutes);
+
+          // Populate existing selected questions
+          if (Array.isArray(exam.questions)) {
+            const currentSelectedIds = exam.questions.map((q) => q.id);
+            setSelectedQuestionIds(currentSelectedIds);
+          }
         }
-      } else {
-        // Default start = now, end = 7 days later
-        const now = new Date();
-        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        setStartAt(formatDateForInput(now.toISOString()));
-        setEndAt(formatDateForInput(nextWeek.toISOString()));
       }
     } catch (err) {
-      console.error('Failed to load exam form data:', err);
-      setError('Failed to load initial data.');
+      console.error('Error fetching exam form data:', err);
+      setError('Failed to load exam details.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper to refresh question list and auto-select newly added question(s)
-  const refreshAndAutoSelectNew = async (newQuestionIds = []) => {
-    try {
-      const qRes = await api.get('/questions?limit=1000');
-      const updatedBank = qRes.data.data || [];
-      setAllQuestions(updatedBank);
-
-      if (newQuestionIds.length > 0) {
-        setSelectedQuestionIds((prev) => Array.from(new Set([...newQuestionIds, ...prev])));
-      } else {
-        // Auto select the newest question if ID wasn't explicitly passed
-        if (updatedBank.length > 0) {
-          const newestId = updatedBank[0].id;
-          setSelectedQuestionIds((prev) => Array.from(new Set([newestId, ...prev])));
-        }
-      }
-    } catch (err) {
-      console.error('Failed to refresh questions:', err);
-    }
-  };
-
-  const toggleQuestionSelection = (qId) => {
+  const handleToggleQuestion = (qId) => {
     setSelectedQuestionIds((prev) =>
       prev.includes(qId) ? prev.filter((item) => item !== qId) : [...prev, qId]
     );
@@ -135,31 +114,50 @@ const ExamForm = () => {
 
   const handleSelectAllFiltered = () => {
     const filteredIds = filteredQuestions.map((q) => q.id);
-    const allSelected = filteredIds.every((qId) => selectedQuestionIds.includes(qId));
+    const allFilteredSelected = filteredIds.every((qId) => selectedQuestionIds.includes(qId));
 
-    if (allSelected) {
+    if (allFilteredSelected) {
+      // Deselect all filtered
       setSelectedQuestionIds((prev) => prev.filter((qId) => !filteredIds.includes(qId)));
     } else {
+      // Add all filtered to selection
       setSelectedQuestionIds((prev) => Array.from(new Set([...prev, ...filteredIds])));
     }
+  };
+
+  const handleQuickAddSuccess = (newQuestion) => {
+    // Add new question to list and automatically select it for this exam
+    setAllQuestions((prev) => [newQuestion, ...prev]);
+    setSelectedQuestionIds((prev) => [newQuestion.id, ...prev]);
+  };
+
+  const handleQuickCSVSuccess = () => {
+    // Refresh question list after CSV import
+    api.get('/questions', { params: { limit: 1000 } }).then((res) => {
+      if (res.data.success) {
+        setAllQuestions(res.data.data);
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!title.trim() || !startAt || !endAt || !durationMinutes) {
-      setError('Please fill in all required exam settings.');
+    if (!title.trim()) {
+      setError('Exam title is required.');
       return;
     }
-
+    if (!startAt || !endAt) {
+      setError('Start date and End date are required.');
+      return;
+    }
     if (new Date(endAt) <= new Date(startAt)) {
-      setError('End date/time must be after start date/time.');
+      setError('End Date/Time must be after Start Date/Time.');
       return;
     }
-
     if (selectedQuestionIds.length === 0) {
-      setError('Please select at least one question for this exam.');
+      setError('Please select at least 1 question for the exam.');
       return;
     }
 
@@ -167,11 +165,12 @@ const ExamForm = () => {
     try {
       const payload = {
         title: title.trim(),
-        description: description.trim(),
+        description: description.trim() || null,
         startAt: new Date(startAt).toISOString(),
         endAt: new Date(endAt).toISOString(),
         durationMinutes: parseInt(durationMinutes, 10),
         showAnswersToStudent,
+        allowPractice,
         questionIds: selectedQuestionIds,
       };
 
@@ -183,19 +182,19 @@ const ExamForm = () => {
 
       navigate('/admin/exams');
     } catch (err) {
+      console.error('Error saving exam:', err);
       setError(err.response?.data?.message || 'Failed to save exam.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Filtered questions in selector list
+  // Filtering questions for selector table
   const filteredQuestions = allQuestions.filter((q) => {
-    const matchesSearch =
-      !questionSearch || q.questionText.toLowerCase().includes(questionSearch.toLowerCase());
+    const matchesSearch = q.questionText.toLowerCase().includes(questionSearch.toLowerCase());
     const matchesCat = selectedCategory === 'All' || q.category === selectedCategory;
-
     const isSelected = selectedQuestionIds.includes(q.id);
+
     let matchesSelection = true;
     if (selectionFilter === 'selected') matchesSelection = isSelected;
     if (selectionFilter === 'unselected') matchesSelection = !isSelected;
@@ -241,35 +240,35 @@ const ExamForm = () => {
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <div className="sm:col-span-2 space-y-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Exam Title <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Gujarat GK & General Studies Mock Test - 01"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white"
+                  placeholder="e.g. Forest Guard Model Test - Paper 1"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium"
                   required
                 />
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Description / Syllabus (Optional)
+              <div className="sm:col-span-2 space-y-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Description / Syllabus Details
                 </label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter practice test details or instructions for candidates..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white"
+                  placeholder="Optional brief overview of topics covered or test instructions"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Start Date & Time <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -281,8 +280,8 @@ const ExamForm = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   End Date & Time <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -294,8 +293,8 @@ const ExamForm = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Duration (Minutes) <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -310,7 +309,7 @@ const ExamForm = () => {
               </div>
 
               {/* Show Answers & Result Toggle */}
-              <div className="sm:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="sm:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                 <label className="flex items-center justify-between cursor-pointer">
                   <div className="space-y-0.5 pr-2">
                     <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -328,6 +327,30 @@ const ExamForm = () => {
                       type="checkbox"
                       checked={showAnswersToStudent}
                       onChange={(e) => setShowAnswersToStudent(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                  </div>
+                </label>
+
+                {/* Practice Mode Toggle */}
+                <label className="flex items-center justify-between cursor-pointer pt-3 border-t border-slate-200">
+                  <div className="space-y-0.5 pr-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <BookOpen className="w-4 h-4 text-brand-600" />
+                      <span>Allow Student Practice Portal Access After Exam Window</span>
+                    </span>
+                    <span className="text-xs text-slate-500 block">
+                      {allowPractice
+                        ? 'Yes: Students who missed the live test window can practice this exam later on the Practice Portal.'
+                        : 'No: Disable post-exam student practice for this test.'}
+                    </span>
+                  </div>
+                  <div className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={allowPractice}
+                      onChange={(e) => setAllowPractice(e.target.checked)}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
@@ -358,174 +381,153 @@ const ExamForm = () => {
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <button
                   type="button"
+                  onClick={() => setIsQuickCSVOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-all"
+                >
+                  <Upload className="w-3.5 h-3.5 text-slate-600" />
+                  <span>CSV Import</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setIsQuickAddOpen(true)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 text-xs font-bold rounded-xl transition-all"
-                  title="Add a new question and automatically select it for this exam"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-extrabold rounded-xl border border-brand-200 transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Quick Add MCQ</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsQuickCSVOpen(true)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl transition-all"
-                  title="Import CSV of new MCQs and automatically select all of them for this exam"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>📥 Quick CSV Import</span>
+                  <span>Add New Question</span>
                 </button>
               </div>
             </div>
 
-            {/* Filter Bar & Views */}
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="relative sm:col-span-2">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={questionSearch}
-                    onChange={(e) => setQuestionSearch(e.target.value)}
-                    placeholder="Search questions by statement..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
-
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      Category: {cat}
-                    </option>
-                  ))}
-                </select>
+            {/* Questions Toolbar Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={questionSearch}
+                  onChange={(e) => setQuestionSearch(e.target.value)}
+                  placeholder="Filter by question text..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
               </div>
 
-              {/* Selection Status Chips & Select All Toggle */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="text-slate-400 font-semibold text-[11px] uppercase mr-1">View:</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectionFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg font-semibold text-xs transition-colors ${
-                      selectionFilter === 'all'
-                        ? 'bg-slate-800 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    All Bank MCQs ({allQuestions.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectionFilter('selected')}
-                    className={`px-2.5 py-1 rounded-lg font-semibold text-xs transition-colors ${
-                      selectionFilter === 'selected'
-                        ? 'bg-brand-600 text-white'
-                        : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
-                    }`}
-                  >
-                    Selected Only ({selectedQuestionIds.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectionFilter('unselected')}
-                    className={`px-2.5 py-1 rounded-lg font-semibold text-xs transition-colors ${
-                      selectionFilter === 'unselected'
-                        ? 'bg-slate-800 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    Unselected ({allQuestions.length - selectedQuestionIds.length})
-                  </button>
-                </div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-slate-700"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    Category: {cat}
+                  </option>
+                ))}
+              </select>
 
-                <button
-                  type="button"
-                  onClick={handleSelectAllFiltered}
-                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg self-start sm:self-auto"
-                >
-                  Toggle Select All ({filteredQuestions.length})
-                </button>
-              </div>
+              <select
+                value={selectionFilter}
+                onChange={(e) => setSelectionFilter(e.target.value)}
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-slate-700"
+              >
+                <option value="all">Show All Questions</option>
+                <option value="selected">Show Selected Only ({selectedQuestionIds.length})</option>
+                <option value="unselected">Show Unselected Only</option>
+              </select>
             </div>
 
-            {/* Questions Selection List (Sorted Newest First) */}
-            <div className="max-h-96 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100">
-              {filteredQuestions.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-400 space-y-2">
-                  <p>No matching questions found in this view.</p>
-                  {selectionFilter === 'selected' && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectionFilter('all')}
-                      className="text-brand-600 font-semibold underline"
-                    >
-                      Show all bank questions
-                    </button>
-                  )}
-                </div>
-              ) : (
-                filteredQuestions.map((q) => {
-                  const isChecked = selectedQuestionIds.includes(q.id);
-                  return (
-                    <div
-                      key={q.id}
-                      onClick={() => toggleQuestionSelection(q.id)}
-                      className={`p-3.5 flex items-start gap-3 cursor-pointer transition-colors ${
-                        isChecked ? 'bg-brand-50/60 border-l-4 border-l-brand-600' : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="mt-0.5 text-slate-500">
-                        {isChecked ? (
-                          <CheckSquare className="w-5 h-5 text-brand-600" />
+            {/* Question Selector List (Desktop Table / Mobile Card List) */}
+            <div className="border border-slate-200/80 rounded-2xl overflow-hidden max-h-96 overflow-y-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-4 py-3 text-center w-12 bg-slate-50">
+                      <button
+                        type="button"
+                        onClick={handleSelectAllFiltered}
+                        title="Select/Deselect All Filtered"
+                        className="text-slate-600 hover:text-brand-600"
+                      >
+                        {filteredQuestions.length > 0 &&
+                        filteredQuestions.every((q) => selectedQuestionIds.includes(q.id)) ? (
+                          <CheckSquare className="w-4 h-4 text-brand-600" />
                         ) : (
-                          <Square className="w-5 h-5 text-slate-300" />
+                          <Square className="w-4 h-4" />
                         )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-800 text-xs sm:text-sm line-clamp-2">
-                          {q.questionText}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                          <span className="px-2 py-0.5 bg-slate-100 rounded text-slate-700">
-                            {q.category}
-                          </span>
-                          <span>Diff: {q.difficulty}</span> •{' '}
-                          <span className="font-medium text-brand-600">Ans: Option {q.correctAnswer}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 bg-slate-50">Question Statement</th>
+                    <th className="px-4 py-3 bg-slate-50">Category</th>
+                    <th className="px-4 py-3 text-center bg-slate-50">Correct Ans</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredQuestions.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-slate-400">
+                        No questions match your current search/filter criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredQuestions.map((q) => {
+                      const isSelected = selectedQuestionIds.includes(q.id);
+                      return (
+                        <tr
+                          key={q.id}
+                          onClick={() => handleToggleQuestion(q.id)}
+                          className={`cursor-pointer transition-colors ${
+                            isSelected ? 'bg-brand-50/50 hover:bg-brand-50' : 'hover:bg-slate-50'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-center">
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-brand-600 mx-auto" />
+                            ) : (
+                              <Square className="w-4 h-4 text-slate-300 mx-auto" />
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-semibold text-slate-800 line-clamp-2">{q.questionText}</p>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              A: {q.optionA} | B: {q.optionB}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-medium">
+                              {q.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center font-extrabold text-brand-600 whitespace-nowrap">
+                            Option {q.correctAnswer}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Submit Actions */}
+          {/* Form Actions */}
           <div className="flex items-center justify-end gap-3 pt-2">
             <Link
               to="/admin/exams"
-              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold"
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl transition-all"
             >
               Cancel
             </Link>
+
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-brand-600/30 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all disabled:opacity-50"
             >
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>{isEdit ? 'Save Changes' : 'Create Exam'}</span>
+                  <span>{isEdit ? 'Update Exam' : 'Create Exam'}</span>
                 </>
               )}
             </button>
@@ -537,21 +539,14 @@ const ExamForm = () => {
       <QuestionFormModal
         isOpen={isQuickAddOpen}
         onClose={() => setIsQuickAddOpen(false)}
-        question={null}
-        onSuccess={async () => {
-          await refreshAndAutoSelectNew();
-          setIsQuickAddOpen(false);
-        }}
+        onSuccess={handleQuickAddSuccess}
       />
 
       {/* Quick CSV Import Modal */}
       <CSVImportModal
         isOpen={isQuickCSVOpen}
         onClose={() => setIsQuickCSVOpen(false)}
-        onSuccess={async () => {
-          await refreshAndAutoSelectNew();
-          setIsQuickCSVOpen(false);
-        }}
+        onSuccess={handleQuickCSVSuccess}
       />
     </div>
   );

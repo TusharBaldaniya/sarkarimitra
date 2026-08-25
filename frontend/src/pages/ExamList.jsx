@@ -121,13 +121,34 @@ const ExamList = () => {
           </p>
         </div>
 
-        <Link
-          to="/admin/exams/create"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create New Exam</span>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              const url = `${window.location.origin}/practice`;
+              navigator.clipboard.writeText(url);
+              setCopiedToken('practice_portal');
+              setTimeout(() => setCopiedToken(''), 2000);
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-xs sm:text-sm rounded-xl transition-all"
+            title="Copy Student Practice Portal Link"
+          >
+            {copiedToken === 'practice_portal' ? (
+              <Check className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+            <span>{copiedToken === 'practice_portal' ? 'Portal Link Copied!' : 'Practice Portal Link'}</span>
+          </button>
+
+          <Link
+            to="/admin/exams/create"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create New Exam</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters Toolbar */}

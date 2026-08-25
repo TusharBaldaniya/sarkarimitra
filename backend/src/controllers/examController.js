@@ -58,6 +58,7 @@ const getExams = async (req, res) => {
         durationMinutes: exam.durationMinutes,
         isActive: exam.isActive,
         showAnswersToStudent: exam.showAnswersToStudent,
+        allowPractice: exam.allowPractice,
         status,
         questionCount: exam._count.examQuestions,
         attemptCount: exam._count.attempts,
@@ -197,6 +198,7 @@ const createExam = async (req, res) => {
         endAt: endDate,
         durationMinutes: parseInt(durationMinutes, 10),
         showAnswersToStudent: showAnswersToStudent !== undefined ? Boolean(showAnswersToStudent) : true,
+        allowPractice: req.body.allowPractice !== undefined ? Boolean(req.body.allowPractice) : true,
         isActive: true,
       },
     });
@@ -277,6 +279,7 @@ const updateExam = async (req, res) => {
         durationMinutes: durationMinutes !== undefined ? parseInt(durationMinutes, 10) : existing.durationMinutes,
         isActive: isActive !== undefined ? Boolean(isActive) : existing.isActive,
         showAnswersToStudent: showAnswersToStudent !== undefined ? Boolean(showAnswersToStudent) : existing.showAnswersToStudent,
+        allowPractice: req.body.allowPractice !== undefined ? Boolean(req.body.allowPractice) : existing.allowPractice,
       },
     });
 
