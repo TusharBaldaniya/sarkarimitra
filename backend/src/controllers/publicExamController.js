@@ -73,8 +73,6 @@ const getPublicPracticeExams = async (req, res) => {
       },
     });
 
-    const now = new Date();
-
     const practiceExams = rawExams.map((exam) => {
       const isExpired = now > new Date(exam.endAt);
       const isUpcoming = now < new Date(exam.startAt);

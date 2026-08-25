@@ -13,7 +13,8 @@ import ExamForm from './pages/ExamForm';
 import ExamResults from './pages/ExamResults';
 import StudentAttemptDetail from './pages/StudentAttemptDetail';
 
-// Student Exam & Practice Pages
+// Student Exam, Practice & Home Pages
+import HomePage from './pages/HomePage';
 import StudentExamStart from './pages/StudentExamStart';
 import StudentExamInterface from './pages/StudentExamInterface';
 import StudentResult from './pages/StudentResult';
@@ -24,8 +25,9 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Default Redirect */}
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          {/* Public Home & Landing Pages */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
 
           {/* Admin Public Route */}
           <Route path="/admin/login" element={<AdminLogin />} />
