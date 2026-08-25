@@ -286,13 +286,12 @@ const StudentExamStart = () => {
                       setStudentName(e.target.value);
                       if (nameError) setNameError('');
                     }}
-                    placeholder="Enter full name (e.g. Sagar Ahir)"
+                    placeholder="Enter full name"
                     required
                     minLength={2}
                     maxLength={100}
-                    className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-medium ${
-                      nameError ? 'border-amber-400 ring-2 ring-amber-200' : 'border-slate-200'
-                    }`}
+                    className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-medium ${nameError ? 'border-amber-400 ring-2 ring-amber-200' : 'border-slate-200'
+                      }`}
                   />
                 </div>
 
